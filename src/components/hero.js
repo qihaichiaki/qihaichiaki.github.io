@@ -14,11 +14,11 @@
         <div class="sky-layer"></div>
         <div class="hero-shell">
           <div class="hero-copy">
-            <p class="kicker">Roxy Inspired Theme</p>
-            <h1>洛琪希风格个人站</h1>
+            <p class="kicker">QIHAI PERSONAL SITE</p>
+            <h1>qihai 的个人网站</h1>
             <p class="lead">
-              用清爽、轻幻想的视觉语言组织内容。
-              图片位仅用于放置你已获得授权的插画或截图。
+              用清爽、轻幻想的视觉语言组织内容，
+              展示项目、记录创作，也保留一点想象力。
             </p>
             <div class="hero-actions">
               <a class="btn btn-main" href="#works">查看作品</a>

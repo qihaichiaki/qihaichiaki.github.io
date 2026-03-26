@@ -43,3 +43,16 @@ powershell -ExecutionPolicy Bypass -File .\scripts\self-check.ps1 -Preview -Keep
 - 会先完成资源和 HTTP 检查。
 - 自动打开浏览器访问 `http://127.0.0.1:4173/index.html`。
 - 本地服务会保持运行，便于你检查页面；按 Enter 后结束。
+
+## 可授权图片候选（高分辨率）
+
+以下候选来自 Pixabay，受 Pixabay Content License 约束，可免费使用并允许修改（请避免单独转售原图）。
+
+- https://pixabay.com/illustrations/anime-girl-generative-ai-7736177/ （7680 x 4320）
+- https://pixabay.com/illustrations/anime-fantasy-girl-fantasy-8880111/ （4096 x 4096）
+- https://pixabay.com/illustrations/ai-generated-fantasy-mage-9318044/ （4096 x 4096）
+
+图片选择建议：
+- 选冷色系（蓝/青）图作为主视觉，和当前站点配色更统一。
+- 人物主体尽量偏右或偏左，避免遮挡标题区域。
+- 优先下载原始分辨率，再在本地压缩到网页版本。
