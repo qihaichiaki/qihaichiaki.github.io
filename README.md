@@ -20,3 +20,13 @@ git push -u origin main
 ## 本地预览
 
 直接用浏览器打开 `index.html` 即可。
+
+## 本地自检（建议每次推送前执行）
+
+在项目根目录运行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\self-check.ps1
+```
+
+如果输出 `本地自检通过`，再执行 `git push`。
