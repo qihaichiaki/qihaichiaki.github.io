@@ -12,16 +12,26 @@
     <main id="top">
       <section class="hero">
         <div class="sky-layer"></div>
-        <div class="hero-copy">
-          <p class="kicker">Personal Website Template</p>
-          <h1>你好，我是 qihai。</h1>
-          <p class="lead">
-            这里是我的线上小宇宙，记录创作、代码与灵感。
-            保持可爱，也保持专业。
-          </p>
-          <div class="hero-actions">
-            <a class="btn btn-main" href="#works">查看作品</a>
-            <a class="btn btn-sub" href="#contact">联系我</a>
+        <div class="hero-shell">
+          <div class="hero-copy">
+            <p class="kicker">Roxy Inspired Theme</p>
+            <h1>洛琪希风格个人站</h1>
+            <p class="lead">
+              用清爽、轻幻想的视觉语言组织内容。
+              图片位仅用于放置你已获得授权的插画或截图。
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-main" href="#works">查看作品</a>
+              <a class="btn btn-sub" href="#contact">联系我</a>
+            </div>
+          </div>
+          <div class="hero-gallery" aria-label="授权图片展示位">
+            <figure class="art art-main">
+              <span>授权图位 A</span>
+            </figure>
+            <figure class="art art-sub">
+              <span>授权图位 B</span>
+            </figure>
           </div>
         </div>
       </section>
