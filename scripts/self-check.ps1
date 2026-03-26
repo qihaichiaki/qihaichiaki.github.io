@@ -1,5 +1,7 @@
 ﻿param(
-  [int]$Port = 4173
+  [int]$Port = 4173,
+  [switch]$Preview,
+  [switch]$KeepServer
 )
 
 $ErrorActionPreference = "Stop"
@@ -54,6 +56,17 @@ try {
   Assert-True ($indexResp.Content -match '<div id="app"></div>') "index.html 页面骨架异常"
   Assert-True ($cssResp.Content -match "site-header") "CSS 关键样式未找到"
   Assert-True ($jsResp.Content -match "IntersectionObserver") "JS 关键逻辑未找到"
+
+  if ($Preview) {
+    $url = "$base/index.html"
+    Write-Host "已打开预览: $url"
+    Start-Process $url
+  }
+
+  if ($KeepServer) {
+    Write-Host "本地服务保持运行中，按 Enter 结束并退出。"
+    [void][System.Console]::ReadLine()
+  }
 }
 finally {
   Stop-Job $job -ErrorAction SilentlyContinue | Out-Null

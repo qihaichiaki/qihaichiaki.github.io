@@ -30,3 +30,16 @@ powershell -ExecutionPolicy Bypass -File .\scripts\self-check.ps1
 ```
 
 如果输出 `本地自检通过`，再执行 `git push`。
+
+## 可视化本地预览（推荐）
+
+如果你希望在自检后直接看到网页效果：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\self-check.ps1 -Preview -KeepServer
+```
+
+说明：
+- 会先完成资源和 HTTP 检查。
+- 自动打开浏览器访问 `http://127.0.0.1:4173/index.html`。
+- 本地服务会保持运行，便于你检查页面；按 Enter 后结束。
