@@ -7,11 +7,11 @@ const GITHUB_USER = "qihaichiaki";
 const CACHE_POLICY = {
   commits: {
     key: "qihai_cache_commits_v1",
-    ttlMs: 1000 * 60 * 60 * 12
+    ttlMs: 1000 * 60 * 60
   },
   stars: {
     key: "qihai_cache_stars_v1",
-    ttlMs: 1000 * 60 * 60 * 12
+    ttlMs: 1000 * 60 * 60 * 2
   }
 };
 
