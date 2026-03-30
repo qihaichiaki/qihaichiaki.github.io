@@ -73,6 +73,14 @@ const syncUrl = () => {
   window.history.replaceState(null, "", url.toString());
 };
 
+const syncBookmarkVisibility = () => {
+  const bookmark = document.querySelector("#toc-bookmark");
+  if (!bookmark) return;
+
+  const visible = state.view === "detail" && state.tocCollapsed;
+  bookmark.classList.toggle("is-visible", visible);
+};
+
 const setView = (view) => {
   const catalog = document.querySelector("#blog-catalog-view");
   const detail = document.querySelector("#blog-detail-view");
@@ -86,25 +94,33 @@ const setView = (view) => {
     document.title = "qihai的世界 | Blog";
   }
 
+  syncBookmarkVisibility();
   syncUrl();
 };
 
 const setTocCollapsed = (collapsed) => {
   const layout = document.querySelector("#blog-reading-layout");
+  const stack = document.querySelector("#blog-right-stack");
   const rail = document.querySelector("#blog-right-rail");
   const toggle = document.querySelector("#toggle-right-rail");
-  if (!layout || !rail || !toggle) return;
+  if (!layout || !stack || !rail || !toggle) return;
 
-  state.tocCollapsed = collapsed;
-  layout.classList.toggle("is-rail-collapsed", collapsed);
-  rail.classList.toggle("is-collapsed", collapsed);
-  toggle.classList.toggle("is-collapsed", collapsed);
-  toggle.setAttribute("aria-label", collapsed ? "展开文章内目录" : "收起文章内目录");
+  const forceExpanded = window.matchMedia("(max-width: 780px)").matches;
+  const nextCollapsed = forceExpanded ? false : collapsed;
+
+  state.tocCollapsed = nextCollapsed;
+  layout.classList.toggle("is-rail-collapsed", nextCollapsed);
+  stack.classList.toggle("is-collapsed", nextCollapsed);
+  rail.classList.toggle("is-collapsed", nextCollapsed);
+  toggle.classList.toggle("is-collapsed", nextCollapsed);
+  toggle.setAttribute("aria-label", nextCollapsed ? "展开文章内目录" : "收起文章内目录");
 
   const icon = toggle.querySelector(".rail-collapse-icon");
   if (icon) {
-    icon.textContent = collapsed ? ">" : "<";
+    icon.textContent = nextCollapsed ? ">" : "<";
   }
+
+  syncBookmarkVisibility();
 };
 
 const clearTocObserver = () => {
@@ -297,6 +313,7 @@ const setupInteractions = () => {
   const backButton = document.querySelector("#back-to-catalog");
   const toggleToc = document.querySelector("#toggle-right-rail");
   const topButton = document.querySelector("#scroll-top-right");
+  const bookmark = document.querySelector("#toc-bookmark");
 
   if (catalogRoot) {
     catalogRoot.addEventListener("click", async (event) => {
@@ -320,6 +337,12 @@ const setupInteractions = () => {
   if (toggleToc) {
     toggleToc.addEventListener("click", () => {
       setTocCollapsed(!state.tocCollapsed);
+    });
+  }
+
+  if (bookmark) {
+    bookmark.addEventListener("click", () => {
+      setTocCollapsed(false);
     });
   }
 

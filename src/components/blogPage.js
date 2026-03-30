@@ -44,19 +44,26 @@
               </article>
             </div>
 
-            <aside id="blog-right-rail" class="blog-right-rail">
-              <div class="right-rail-head">
-                <p class="rail-title">文章内目录</p>
-                <button id="toggle-right-rail" class="rail-collapse-btn" type="button" aria-label="收起文章内目录">
-                  <span class="rail-collapse-icon" aria-hidden="true">&lt;</span>
-                </button>
-              </div>
-              <nav id="article-toc" class="article-toc" aria-label="当前文章目录">
-                <p class="loading">正在生成文章目录...</p>
-              </nav>
-              <button id="scroll-top-right" class="rail-top-btn" type="button">回到顶部</button>
-            </aside>
+            <div id="blog-right-stack" class="blog-right-stack">
+              <button id="scroll-top-right" class="rail-top-btn" type="button">
+                <span aria-hidden="true">↑</span>
+                <span>回到顶部</span>
+              </button>
+              <aside id="blog-right-rail" class="blog-right-rail">
+                <div class="right-rail-head">
+                  <p class="rail-title">文章内目录</p>
+                  <button id="toggle-right-rail" class="rail-collapse-btn" type="button" aria-label="收起文章内目录">
+                    <span class="rail-collapse-icon" aria-hidden="true">&lt;</span>
+                  </button>
+                </div>
+                <nav id="article-toc" class="article-toc" aria-label="当前文章目录">
+                  <p class="loading">正在生成文章目录...</p>
+                </nav>
+              </aside>
+            </div>
           </div>
+
+          <button id="toc-bookmark" class="toc-bookmark" type="button" aria-label="展开文章目录">目录</button>
         </div>
       </section>
     </main>
