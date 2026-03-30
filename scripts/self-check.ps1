@@ -22,11 +22,19 @@ $required = @(
   "index.html",
   "src/main.js",
   "src/components/hero.js",
-  "src/styles/main.css"
+  "src/styles/main.css",
+  "src/lib/markdown.js",
+  "content/posts/index.json"
 )
 
 foreach ($file in $required) {
   Assert-True (Test-Path $file) "缺少文件: $file"
+}
+
+$posts = Get-Content -Raw "content/posts/index.json" | ConvertFrom-Json
+foreach ($post in $posts) {
+  Assert-True ($post.file -ne $null -and $post.file -ne "") "文章索引中存在空 file 字段"
+  Assert-True (Test-Path ("content/posts/" + $post.file)) ("索引引用的 md 不存在: " + $post.file)
 }
 
 Write-Host "[2/4] 检查 index.html 资源引用..."

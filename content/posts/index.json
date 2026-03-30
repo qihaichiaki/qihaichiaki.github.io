@@ -1,0 +1,20 @@
+﻿[
+  {
+    "title": "站点重构日志：蓝发基调版本",
+    "date": "2026-03-30",
+    "file": "2026-03-30-site-refresh.md",
+    "summary": "记录从展示页改造成动态模块首页的过程。"
+  },
+  {
+    "title": "GitHub 模块接入笔记",
+    "date": "2026-03-30",
+    "file": "2026-03-30-github-module.md",
+    "summary": "近期提交仓库与最近 Star 的数据策略。"
+  },
+  {
+    "title": "本地 Markdown 博客工作流",
+    "date": "2026-03-30",
+    "file": "2026-03-30-md-workflow.md",
+    "summary": "如何在本地上传 md 文件并立即展示到网页。"
+  }
+]
