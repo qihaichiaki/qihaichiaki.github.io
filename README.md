@@ -56,3 +56,22 @@ powershell -ExecutionPolicy Bypass -File .\scripts\self-check.ps1 -Preview -Keep
 - 选冷色系（蓝/青）图作为主视觉，和当前站点配色更统一。
 - 人物主体尽量偏右或偏左，避免遮挡标题区域。
 - 优先下载原始分辨率，再在本地压缩到网页版本。
+
+## 随机背景图库扩展
+
+随机背景配置在：`src/data/backgrounds.js`
+
+你可以继续往 `backgroundGallery` 数组追加对象：
+
+```js
+{
+  name: "your-image-name",
+  url: "https://.../your-image.jpg",
+  page: "https://source-page",
+  author: "author name"
+}
+```
+
+行为说明：
+- 有可加载背景图时：页面会随机抽取一张作为首屏背景。
+- 当图库为空或图片加载失败：自动回退到蓝发基调（Roxy blue）配色。

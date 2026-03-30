@@ -24,13 +24,14 @@
               <a class="btn btn-main" href="#works">查看作品</a>
               <a class="btn btn-sub" href="#contact">联系我</a>
             </div>
+            <p class="bg-hint" id="bg-hint"></p>
           </div>
           <div class="hero-gallery" aria-label="授权图片展示位">
             <figure class="art art-main">
-              <span>授权图位 A</span>
+              <span>图库随机背景启用</span>
             </figure>
             <figure class="art art-sub">
-              <span>授权图位 B</span>
+              <span>可在 src/data/backgrounds.js 扩展</span>
             </figure>
           </div>
         </div>

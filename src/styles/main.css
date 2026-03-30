@@ -9,6 +9,7 @@
   --accent-2: #7f5dff;
   --sky: #9cecff;
   --sky-shift: 0px;
+  --hero-bg-image: none;
 }
 
 * {
@@ -93,6 +94,22 @@ body {
   padding: 110px 20px 50px;
 }
 
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--hero-bg-image);
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transform: scale(1.02);
+  transition: opacity 380ms ease;
+}
+
+body.has-hero-bg .hero::before {
+  opacity: 0.36;
+}
+
 .sky-layer {
   position: absolute;
   inset: -40px;
@@ -159,6 +176,16 @@ h1 {
   flex-wrap: wrap;
 }
 
+.bg-hint {
+  margin: 14px 0 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.bg-hint a {
+  color: var(--accent);
+}
+
 .hero-gallery {
   animation-delay: 420ms;
   display: grid;
@@ -171,8 +198,8 @@ h1 {
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.66);
   background:
-    linear-gradient(130deg, rgba(79, 107, 255, 0.28), rgba(156, 236, 255, 0.3)),
-    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.55), transparent 40%);
+    linear-gradient(130deg, rgba(79, 107, 255, 0.2), rgba(156, 236, 255, 0.2)),
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.48), transparent 40%);
   box-shadow: 0 14px 30px rgba(33, 46, 96, 0.16);
   display: grid;
   place-items: end start;
