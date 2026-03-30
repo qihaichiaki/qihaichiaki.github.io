@@ -43,11 +43,9 @@ export function parseMarkdown(markdown) {
   });
 
   container.querySelectorAll("img").forEach((img) => {
-    const label = img.getAttribute("alt") || img.getAttribute("src") || "图片";
-    const note = doc.createElement("span");
-    note.className = "md-image-note";
-    note.textContent = `[图片资源] ${label}`;
-    img.replaceWith(note);
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.classList.add("md-image");
   });
 
   return {

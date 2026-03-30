@@ -692,6 +692,17 @@ h1 {
   color: var(--accent);
 }
 
+.blog-content .md-image,
+.blog-content img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 14px auto;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.92);
+}
+
 .article-toc {
   flex: 1 1 auto;
   display: flex;
