@@ -223,6 +223,16 @@ h1 {
   line-height: 1.2;
 }
 
+.blog-page-title {
+  margin: 10px 0 0;
+  font-size: clamp(1.8rem, 4.8vw, 3rem);
+  line-height: 1.18;
+}
+
+.blog-page-main .lead {
+  margin-top: 12px;
+}
+
 .repo-list {
   margin-top: 24px;
   border-top: 1px solid var(--line);
@@ -315,6 +325,10 @@ h1 {
 
 .blog-content {
   min-height: 280px;
+}
+
+.blog-content :first-child {
+  margin-top: 0;
 }
 
 .blog-content h1,

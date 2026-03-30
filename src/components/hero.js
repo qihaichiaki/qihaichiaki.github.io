@@ -5,7 +5,8 @@
       <nav class="site-nav">
         <a href="#works">提交</a>
         <a href="#stars">Star</a>
-        <a href="#blog">博客</a>
+        <a href="#posts">博客</a>
+        <a href="./blog.html">博客页</a>
         <a href="#contact">联系</a>
       </nav>
     </header>
@@ -16,13 +17,13 @@
         <div class="hero-shell">
           <div class="hero-copy">
             <p class="kicker">QIHAI PERSONAL SITE</p>
-            <h1>蓝发基调的个人网站</h1>
+            <h1>qihai的世界</h1>
             <p class="lead">
-              以简洁排版呈现近期代码参与、收藏偏好与本地博客内容。
+              以简洁排版呈现近期代码参与、收藏偏好与写作节奏。
             </p>
             <div class="hero-actions">
               <a class="btn btn-main" href="#works">查看近期提交</a>
-              <a class="btn btn-sub" href="#blog">浏览博客</a>
+              <a class="btn btn-sub" href="./blog.html">进入博客页</a>
             </div>
           </div>
           <div class="hero-orb" aria-hidden="true"></div>
@@ -45,16 +46,11 @@
         </div>
       </section>
 
-      <section id="blog" class="section reveal">
-        <p class="section-tag">BLOG</p>
-        <h2>本地 Markdown 博客</h2>
-        <div class="blog-layout">
-          <aside id="blog-list" class="blog-list">
-            <p class="loading">正在读取文章列表...</p>
-          </aside>
-          <article id="blog-content" class="blog-content">
-            <p class="loading">请选择一篇文章开始阅读。</p>
-          </article>
+      <section id="posts" class="section reveal">
+        <p class="section-tag">LATEST POSTS</p>
+        <h2>最近添加的博客</h2>
+        <div id="recent-posts" class="repo-list">
+          <p class="loading">正在读取文章列表...</p>
         </div>
       </section>
 
