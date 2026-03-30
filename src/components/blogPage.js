@@ -14,19 +14,22 @@
       <section class="section blog-page-hero reveal">
         <p class="section-tag">BLOG</p>
         <h1 class="blog-page-title">qihai的世界 · 博客</h1>
-        <p class="lead">聚焦阅读，按模块筛选，目录可自动回收。</p>
+        <p class="lead">聚焦阅读体验：左侧文章目录、右侧当前文章目录，均支持边缘收展。</p>
       </section>
 
       <section class="section reveal blog-reading-zone">
-        <div class="blog-layout is-collapsed" id="blog-layout">
-          <aside class="blog-rail">
-            <div class="rail-head">
-              <div class="rail-title">文章目录</div>
-              <button id="toggle-rail" class="rail-toggle" type="button">展开目录</button>
-            </div>
-            <div id="blog-modules" class="module-tabs"></div>
-            <div id="blog-list" class="blog-list">
-              <p class="loading">正在读取文章列表...</p>
+        <div class="blog-shell" id="blog-shell">
+          <aside id="blog-left-rail" class="blog-side blog-side-left">
+            <button id="toggle-left-rail" class="side-handle side-handle-left" type="button" aria-label="收起文章目录">
+              <span aria-hidden="true">◀</span>
+            </button>
+            <div class="side-inner">
+              <div class="rail-head">
+                <div class="rail-title">文章目录</div>
+              </div>
+              <div id="blog-list" class="blog-list">
+                <p class="loading">正在读取文章列表...</p>
+              </div>
             </div>
           </aside>
 
@@ -38,6 +41,20 @@
               <p class="loading">请选择一篇文章开始阅读。</p>
             </article>
           </div>
+
+          <aside id="blog-right-rail" class="blog-side blog-side-right">
+            <button id="toggle-right-rail" class="side-handle side-handle-right" type="button" aria-label="收起文章内目录">
+              <span aria-hidden="true">▶</span>
+            </button>
+            <div class="side-inner">
+              <div class="rail-head">
+                <div class="rail-title">文章内目录</div>
+              </div>
+              <nav id="article-toc" class="article-toc" aria-label="当前文章目录">
+                <p class="loading">正在生成文章目录...</p>
+              </nav>
+            </div>
+          </aside>
         </div>
       </section>
     </main>
