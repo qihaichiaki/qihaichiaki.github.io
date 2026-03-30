@@ -374,10 +374,6 @@ const setupInteractions = () => {
   }
 
   const scrollToTop = () => {
-    if (state.tocCollapsed) {
-      setTocCollapsed(false);
-    }
-
     if (topButton) {
       topButton.classList.add("is-jump");
       if (state.topButtonAnimTimer) {
