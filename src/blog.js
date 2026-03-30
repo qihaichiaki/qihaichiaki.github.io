@@ -103,7 +103,7 @@ const setTocCollapsed = (collapsed) => {
 
   const icon = toggle.querySelector(".rail-collapse-icon");
   if (icon) {
-    icon.textContent = collapsed ? "❯" : "❮";
+    icon.textContent = collapsed ? ">" : "<";
   }
 };
 
@@ -250,14 +250,6 @@ const renderCatalog = () => {
     .join("");
 };
 
-const updateScrollTopButton = () => {
-  const button = document.querySelector("#float-scroll-top");
-  if (!button) return;
-
-  const shouldShow = state.view === "detail" && window.scrollY > 320;
-  button.classList.toggle("is-visible", shouldShow);
-};
-
 const renderPostContent = async (post) => {
   const contentRoot = document.querySelector("#blog-content");
   if (!contentRoot) return;
@@ -293,21 +285,18 @@ const openPost = async (file) => {
   if (window.matchMedia("(max-width: 1160px)").matches) {
     setTocCollapsed(true);
   }
-  updateScrollTopButton();
 };
 
 const showCatalog = () => {
   clearTocObserver();
   setView("catalog");
-  updateScrollTopButton();
 };
 
 const setupInteractions = () => {
   const catalogRoot = document.querySelector("#blog-catalog");
   const backButton = document.querySelector("#back-to-catalog");
   const toggleToc = document.querySelector("#toggle-right-rail");
-  const topButton = document.querySelector("#scroll-top-trigger");
-  const floatTop = document.querySelector("#float-scroll-top");
+  const topButton = document.querySelector("#scroll-top-right");
 
   if (catalogRoot) {
     catalogRoot.addEventListener("click", async (event) => {
@@ -341,12 +330,6 @@ const setupInteractions = () => {
   if (topButton) {
     topButton.addEventListener("click", scrollToTop);
   }
-
-  if (floatTop) {
-    floatTop.addEventListener("click", scrollToTop);
-  }
-
-  window.addEventListener("scroll", updateScrollTopButton, { passive: true });
 
   window.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && state.view === "detail") {

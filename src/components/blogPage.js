@@ -32,7 +32,6 @@
         <div id="blog-detail-view" class="blog-detail-view is-hidden">
           <div class="blog-detail-toolbar">
             <button id="back-to-catalog" class="btn btn-sub" type="button">返回博客目录</button>
-            <button id="scroll-top-trigger" class="btn btn-sub" type="button">回到顶部</button>
           </div>
 
           <div class="blog-reading-layout" id="blog-reading-layout">
@@ -49,16 +48,15 @@
               <div class="right-rail-head">
                 <p class="rail-title">文章内目录</p>
                 <button id="toggle-right-rail" class="rail-collapse-btn" type="button" aria-label="收起文章内目录">
-                  <span class="rail-collapse-icon" aria-hidden="true">❮</span>
+                  <span class="rail-collapse-icon" aria-hidden="true">&lt;</span>
                 </button>
               </div>
               <nav id="article-toc" class="article-toc" aria-label="当前文章目录">
                 <p class="loading">正在生成文章目录...</p>
               </nav>
+              <button id="scroll-top-right" class="rail-top-btn" type="button">回到顶部</button>
             </aside>
           </div>
-
-          <button id="float-scroll-top" class="float-top-btn" type="button" aria-label="回到顶部">↑</button>
         </div>
       </section>
     </main>
