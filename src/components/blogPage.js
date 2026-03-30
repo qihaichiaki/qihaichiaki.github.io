@@ -6,7 +6,7 @@
         <a href="./index.html#works">提交</a>
         <a href="./index.html#stars">Star</a>
         <a href="./index.html#posts">最近博客</a>
-        <a href="#top">博客页</a>
+        <a href="#top">博客</a>
       </nav>
     </header>
 

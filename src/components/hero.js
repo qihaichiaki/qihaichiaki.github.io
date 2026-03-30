@@ -5,8 +5,8 @@
       <nav class="site-nav">
         <a href="#works">提交</a>
         <a href="#stars">Star</a>
-        <a href="#posts">博客</a>
-        <a href="./blog.html">博客页</a>
+        <a href="#posts">最近博客</a>
+        <a href="./blog.html">博客</a>
         <a href="#contact">联系</a>
       </nav>
     </header>
