@@ -2,12 +2,15 @@
   return `
     <header class="site-header">
       <a class="brand" href="./index.html#top">qihai</a>
-      <nav class="site-nav">
-        <a href="./index.html#works">提交</a>
-        <a href="./index.html#stars">Star</a>
-        <a href="./index.html#posts">最近博客</a>
-        <a href="#top">博客</a>
-      </nav>
+      <div class="header-controls">
+        <nav class="site-nav">
+          <a href="./index.html#works">提交</a>
+          <a href="./index.html#stars">Star</a>
+          <a href="./index.html#posts">最近博客</a>
+          <a href="#top">博客</a>
+        </nav>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换到夜晚主题">夜晚</button>
+      </div>
     </header>
 
     <main id="top" class="blog-page-main">

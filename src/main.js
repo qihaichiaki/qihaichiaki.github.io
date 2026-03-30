@@ -1,6 +1,8 @@
 ﻿import { hero } from "./components/hero.js";
+import { setupThemeToggle } from "./lib/theme.js";
 
 document.querySelector("#app").innerHTML = hero();
+setupThemeToggle();
 
 const GITHUB_USER = "qihaichiaki";
 
