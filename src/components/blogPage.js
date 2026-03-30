@@ -48,7 +48,9 @@
             <aside id="blog-right-rail" class="blog-right-rail">
               <div class="right-rail-head">
                 <p class="rail-title">文章内目录</p>
-                <button id="toggle-right-rail" class="rail-collapse-btn" type="button" aria-label="收起文章内目录">收起</button>
+                <button id="toggle-right-rail" class="rail-collapse-btn" type="button" aria-label="收起文章内目录">
+                  <span class="rail-collapse-icon" aria-hidden="true">❮</span>
+                </button>
               </div>
               <nav id="article-toc" class="article-toc" aria-label="当前文章目录">
                 <p class="loading">正在生成文章目录...</p>

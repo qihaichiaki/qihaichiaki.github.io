@@ -4,18 +4,6 @@ document.querySelector("#app").innerHTML = hero();
 
 const GITHUB_USER = "qihaichiaki";
 
-const FALLBACK_COMMITS = [
-  { name: "qihaichiaki/qihaichiaki.github.io", url: "https://github.com/qihaichiaki/qihaichiaki.github.io", text: "离线记录" },
-  { name: "qihaichiaki/namica", url: "https://github.com/qihaichiaki/namica", text: "离线记录" },
-  { name: "qihaichiaki/namica-editor", url: "https://github.com/qihaichiaki/namica-editor", text: "离线记录" }
-];
-
-const FALLBACK_STARS = [
-  { name: "microsoft/vscode", url: "https://github.com/microsoft/vscode", text: "离线记录" },
-  { name: "facebook/react", url: "https://github.com/facebook/react", text: "离线记录" },
-  { name: "vitejs/vite", url: "https://github.com/vitejs/vite", text: "离线记录" }
-];
-
 const CACHE_POLICY = {
   commits: {
     key: "qihai_cache_commits_v1",
@@ -26,9 +14,6 @@ const CACHE_POLICY = {
     ttlMs: 1000 * 60 * 60 * 12
   }
 };
-
-const SNAPSHOT_URL = "./content/github-snapshot.json";
-let snapshotPromise = null;
 
 const revealNodes = document.querySelectorAll(".reveal");
 const observer = new IntersectionObserver(
@@ -112,15 +97,6 @@ const writeCache = (policy, items) => {
   }
 };
 
-const loadSnapshot = async () => {
-  if (!snapshotPromise) {
-    snapshotPromise = fetch(SNAPSHOT_URL)
-      .then((resp) => (resp.ok ? resp.json() : null))
-      .catch(() => null);
-  }
-  return snapshotPromise;
-};
-
 const fetchJSON = async (url, retries = 1) => {
   let lastError = null;
 
@@ -128,16 +104,22 @@ const fetchJSON = async (url, retries = 1) => {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 8000);
-      const resp = await fetch(url, {
-        headers: {
-          Accept: "application/vnd.github+json"
-        },
-        signal: controller.signal
-      });
+      const resp = await fetch(url, { signal: controller.signal });
       clearTimeout(timeout);
 
       if (!resp.ok) {
-        throw new Error(`HTTP ${resp.status}`);
+        let message = `HTTP ${resp.status}`;
+        try {
+          const data = await resp.json();
+          if (typeof data?.message === "string" && data.message) {
+            message = data.message;
+          }
+        } catch {
+          // ignore parse errors
+        }
+        const error = new Error(message);
+        error.status = resp.status;
+        throw error;
       }
 
       return resp.json();
@@ -178,6 +160,20 @@ const setRepoList = (containerId, items, emptyText, mapper, note = "") => {
     `
       )
       .join("");
+};
+
+const setRepoError = (containerId, title, error) => {
+  const root = document.querySelector(containerId);
+  if (!root) return;
+
+  const message = String(error?.message || "");
+  const rateLimited = message.toLowerCase().includes("rate limit");
+  const detail = rateLimited ? "当前触发 GitHub API 频率限制，请稍后刷新。" : `错误信息：${message || "网络异常"}`;
+
+  root.innerHTML = `
+    <p class="empty">${title}</p>
+    <p class="cache-note">${detail}</p>
+  `;
 };
 
 const fetchRecentCommitItems = async () => {
@@ -266,12 +262,15 @@ const loadRecentCommits = async () => {
     if (cache.fresh) return;
   }
 
+  let fetchError = null;
   try {
     const items = await fetchRecentCommitItems();
     writeCache(CACHE_POLICY.commits, items);
     setRepoList("#recent-works", items, "近期没有公开提交记录。", (item) => item.text);
     return;
-  } catch {}
+  } catch (error) {
+    fetchError = error;
+  }
 
   if (cache?.items?.length) {
     setRepoList(
@@ -284,19 +283,7 @@ const loadRecentCommits = async () => {
     return;
   }
 
-  const snapshot = await loadSnapshot();
-  if (snapshot?.commits?.length) {
-    setRepoList(
-      "#recent-works",
-      snapshot.commits,
-      "近期没有公开提交记录。",
-      (item) => item.text,
-      snapshot.generatedAt ? `离线快照 · ${formatDateTime(snapshot.generatedAt)}` : "离线快照"
-    );
-    return;
-  }
-
-  setRepoList("#recent-works", FALLBACK_COMMITS, "读取 GitHub 提交数据失败。", (item) => item.text, "网络不可用，暂用离线记录");
+  setRepoError("#recent-works", "读取 GitHub 提交数据失败。", fetchError);
 };
 
 const loadRecentStars = async () => {
@@ -313,12 +300,15 @@ const loadRecentStars = async () => {
     if (cache.fresh) return;
   }
 
+  let fetchError = null;
   try {
     const items = await fetchRecentStarItems();
     writeCache(CACHE_POLICY.stars, items);
     setRepoList("#recent-stars", items, "近期没有公开 Star 记录。", (item) => item.text);
     return;
-  } catch {}
+  } catch (error) {
+    fetchError = error;
+  }
 
   if (cache?.items?.length) {
     setRepoList(
@@ -331,19 +321,7 @@ const loadRecentStars = async () => {
     return;
   }
 
-  const snapshot = await loadSnapshot();
-  if (snapshot?.stars?.length) {
-    setRepoList(
-      "#recent-stars",
-      snapshot.stars,
-      "近期没有公开 Star 记录。",
-      (item) => item.text,
-      snapshot.generatedAt ? `离线快照 · ${formatDateTime(snapshot.generatedAt)}` : "离线快照"
-    );
-    return;
-  }
-
-  setRepoList("#recent-stars", FALLBACK_STARS, "读取 GitHub Star 数据失败。", (item) => item.text, "网络不可用，暂用离线记录");
+  setRepoError("#recent-stars", "读取 GitHub Star 数据失败。", fetchError);
 };
 
 const loadRecentPosts = async () => {

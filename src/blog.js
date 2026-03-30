@@ -98,8 +98,13 @@ const setTocCollapsed = (collapsed) => {
   state.tocCollapsed = collapsed;
   layout.classList.toggle("is-rail-collapsed", collapsed);
   rail.classList.toggle("is-collapsed", collapsed);
-  toggle.textContent = collapsed ? "展开" : "收起";
+  toggle.classList.toggle("is-collapsed", collapsed);
   toggle.setAttribute("aria-label", collapsed ? "展开文章内目录" : "收起文章内目录");
+
+  const icon = toggle.querySelector(".rail-collapse-icon");
+  if (icon) {
+    icon.textContent = collapsed ? "❯" : "❮";
+  }
 };
 
 const clearTocObserver = () => {

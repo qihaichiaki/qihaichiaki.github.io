@@ -317,7 +317,7 @@ h1 {
 
 .blog-catalog-view,
 .blog-detail-view {
-  width: min(1080px, 100%);
+  width: min(1320px, 100%);
   margin: 0 auto;
 }
 
@@ -419,8 +419,10 @@ h1 {
 }
 
 .blog-reading-layout {
+  --article-max: min(1080px, calc(100vw - 220px));
+  --toc-width: 188px;
   display: grid;
-  grid-template-columns: minmax(0, 760px) minmax(0, 210px);
+  grid-template-columns: minmax(0, var(--article-max)) minmax(0, var(--toc-width));
   justify-content: center;
   align-items: start;
   gap: clamp(14px, 2.6vw, 28px);
@@ -428,11 +430,11 @@ h1 {
 }
 
 .blog-reading-layout.is-rail-collapsed {
-  grid-template-columns: minmax(0, 760px) 56px;
+  grid-template-columns: minmax(0, var(--article-max)) 54px;
 }
 
 .blog-article-wrap {
-  width: min(760px, 100%);
+  width: min(1080px, 100%);
   margin: 0 auto;
 }
 
@@ -440,24 +442,30 @@ h1 {
   position: sticky;
   top: 76px;
   align-self: start;
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.84);
   padding: 10px 10px 12px;
-  min-height: 120px;
-  transition: padding 180ms ease;
+  min-height: 150px;
+  max-height: calc(100svh - 92px);
+  overflow: hidden;
+  transition: padding 180ms ease, border-radius 180ms ease, background-color 180ms ease;
 }
 
 .blog-right-rail.is-collapsed {
-  padding: 10px 8px;
+  padding: 8px 6px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
 }
 
 .right-rail-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
 .rail-title {
@@ -470,12 +478,31 @@ h1 {
 
 .rail-collapse-btn {
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.92);
   color: var(--ink);
-  font-size: 0.72rem;
-  padding: 3px 10px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  padding: 0;
   cursor: pointer;
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.rail-collapse-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(79, 107, 255, 0.1);
+}
+
+.rail-collapse-icon {
+  line-height: 1;
+  transition: transform 200ms ease;
+}
+
+.rail-collapse-btn.is-collapsed .rail-collapse-icon {
+  transform: translateX(1px);
 }
 
 .blog-reading-layout.is-rail-collapsed .article-toc,
@@ -485,13 +512,13 @@ h1 {
 
 .blog-reading-layout.is-rail-collapsed .right-rail-head {
   margin-bottom: 0;
+  justify-content: center;
 }
 
 .blog-reading-layout.is-rail-collapsed .rail-collapse-btn {
   width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  padding: 0;
+  height: 48px;
+  border-radius: 12px;
 }
 
 .blog-meta {
@@ -622,9 +649,15 @@ h1 {
 }
 
 .article-toc {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable both-edges;
+  padding-right: 4px;
 }
 
 .toc-link {
@@ -665,6 +698,15 @@ h1 {
   color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.6;
+}
+
+.article-toc::-webkit-scrollbar {
+  width: 7px;
+}
+
+.article-toc::-webkit-scrollbar-thumb {
+  background: rgba(79, 107, 255, 0.26);
+  border-radius: 999px;
 }
 
 .float-top-btn {
@@ -747,13 +789,18 @@ h1 {
 }
 
 @media (max-width: 1180px) {
+  .blog-detail-view {
+    width: min(1180px, 100%);
+  }
+
   .blog-reading-layout {
-    grid-template-columns: minmax(0, 1fr) 186px;
+    --article-max: min(960px, calc(100vw - 180px));
+    --toc-width: 174px;
     gap: 14px;
   }
 
   .blog-reading-layout.is-rail-collapsed {
-    grid-template-columns: minmax(0, 1fr) 56px;
+    grid-template-columns: minmax(0, var(--article-max)) 50px;
   }
 
   .blog-content {
@@ -791,6 +838,7 @@ h1 {
   .blog-right-rail {
     position: static;
     top: auto;
+    max-height: none;
   }
 
   .blog-content {

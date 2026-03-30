@@ -29,8 +29,7 @@ $required = @(
   "src/lib/markdown.js",
   "src/vendor/marked.esm.js",
   "scripts/new-post.ps1",
-  "content/posts/index.json",
-  "content/github-snapshot.json"
+  "content/posts/index.json"
 )
 
 foreach ($file in $required) {
