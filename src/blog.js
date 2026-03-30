@@ -81,6 +81,14 @@ const syncBookmarkVisibility = () => {
   bookmark.classList.toggle("is-visible", visible);
 };
 
+const syncTopButtonVisibility = () => {
+  const topButton = document.querySelector("#scroll-top-right");
+  if (!topButton) return;
+
+  const visible = state.view === "detail" && window.scrollY > 220;
+  topButton.classList.toggle("is-visible", visible);
+};
+
 const setView = (view) => {
   const catalog = document.querySelector("#blog-catalog-view");
   const detail = document.querySelector("#blog-detail-view");
@@ -95,6 +103,7 @@ const setView = (view) => {
   }
 
   syncBookmarkVisibility();
+  syncTopButtonVisibility();
   syncUrl();
 };
 
@@ -353,6 +362,10 @@ const setupInteractions = () => {
   if (topButton) {
     topButton.addEventListener("click", scrollToTop);
   }
+
+  window.addEventListener("scroll", syncTopButtonVisibility, { passive: true });
+  window.addEventListener("resize", syncTopButtonVisibility);
+  syncTopButtonVisibility();
 
   window.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && state.view === "detail") {

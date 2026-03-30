@@ -741,8 +741,8 @@ h1 {
 
 .floating-top-btn {
   position: fixed;
-  right: 16px;
-  top: 96px;
+  right: clamp(16px, calc((100vw - 1320px) / 2 + 16px), 180px);
+  top: 78px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -757,7 +757,16 @@ h1 {
   cursor: pointer;
   box-shadow: 0 10px 24px rgba(16, 28, 88, 0.14);
   z-index: 50;
-  transition: transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transition: transform 180ms ease, background-color 160ms ease, box-shadow 160ms ease, opacity 180ms ease;
+}
+
+.floating-top-btn.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .floating-top-btn:hover {
@@ -768,14 +777,13 @@ h1 {
 
 .toc-bookmark {
   position: fixed;
-  right: 0;
+  right: clamp(8px, calc((100vw - 1320px) / 2 + 8px), 170px);
   top: 46%;
-  transform: translateY(-50%) translateX(118%) scale(0.96);
+  transform: translateY(-50%) translateX(calc(100% + 10px)) scale(0.96);
   opacity: 0;
   pointer-events: none;
   border: 1px solid rgba(31, 35, 68, 0.18);
-  border-right: 0;
-  border-radius: 14px 0 0 14px;
+  border-radius: 14px;
   background: linear-gradient(180deg, #6f93ff 0%, #4f6bff 100%);
   color: #fff;
   writing-mode: vertical-rl;
@@ -790,6 +798,7 @@ h1 {
   z-index: 62;
 }
 
+.blog-reading-layout.is-rail-collapsed + .toc-bookmark,
 .toc-bookmark.is-visible {
   transform: translateY(-50%) translateX(0) scale(1);
   opacity: 1;
