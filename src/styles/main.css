@@ -750,46 +750,51 @@ h1 {
 }
 
 .floating-top-btn {
-  position: relative;
+  position: fixed;
+  right: 0;
+  top: 33%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  width: 100%;
-  height: var(--top-btn-height);
-  padding: 0 12px;
+  gap: 4px;
+  width: 34px;
+  min-height: 92px;
+  padding: 10px 4px;
   border: 1px solid rgba(31, 35, 68, 0.2);
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.96);
-  color: var(--ink);
-  font-size: 0.8rem;
+  border-radius: 12px 0 0 12px;
+  background: linear-gradient(180deg, #6f93ff 0%, #4f6bff 100%);
+  color: #fff;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 0.1em;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(16, 28, 88, 0.14);
-  z-index: 50;
+  box-shadow: 0 14px 28px rgba(19, 34, 106, 0.3);
+  z-index: 64;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(-5px);
-  transition: transform 180ms ease, background-color 160ms ease, box-shadow 160ms ease, opacity 180ms ease;
+  transform: translateX(calc(100% + 10px)) scale(0.95);
+  transition: transform 200ms ease, box-shadow 180ms ease, opacity 180ms ease;
 }
 
 .floating-top-btn.is-visible {
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0);
+  transform: translateX(0) scale(1);
 }
 
 .floating-top-btn:hover {
-  transform: translateY(-1px);
-  background: #fff;
-  box-shadow: 0 12px 28px rgba(16, 28, 88, 0.2);
+  box-shadow: 0 18px 36px rgba(19, 34, 106, 0.4);
 }
 
 .toc-bookmark {
-  align-self: flex-end;
+  position: fixed;
+  right: 0;
+  top: 52%;
   width: 30px;
   min-height: 90px;
-  transform: translateX(26px) scale(0.96);
+  transform: translateX(calc(100% + 10px)) scale(0.96);
   opacity: 0;
   pointer-events: none;
   border: 1px solid rgba(31, 35, 68, 0.18);
@@ -805,7 +810,7 @@ h1 {
   cursor: pointer;
   box-shadow: 0 14px 28px rgba(19, 34, 106, 0.32);
   transition: transform 240ms ease, opacity 220ms ease, box-shadow 220ms ease;
-  z-index: 6;
+  z-index: 63;
 }
 
 .blog-reading-layout.is-rail-collapsed .toc-bookmark,
@@ -941,11 +946,10 @@ h1 {
   }
 
   .floating-top-btn {
-    height: 34px;
+    top: auto;
+    bottom: 84px;
+    min-height: 86px;
     font-size: 0.76rem;
-    transform: none;
-    opacity: 1;
-    pointer-events: auto;
   }
 
   .blog-right-rail {
