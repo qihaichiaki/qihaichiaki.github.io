@@ -80,6 +80,12 @@ export function parseMarkdown(markdown) {
       continue;
     }
 
+    if (line.startsWith("> ")) {
+      closeList();
+      out.push(`<blockquote>${inlineFormat(escapeHtml(line.slice(2)))}</blockquote>`);
+      continue;
+    }
+
     closeList();
     out.push(`<p>${inlineFormat(escapeHtml(line))}</p>`);
   }

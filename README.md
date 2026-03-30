@@ -39,6 +39,18 @@
 - 首页自动显示最近三篇预览
 - `blog.html` 自动显示完整文章列表
 
+## 新增博客脚手架（推荐）
+
+可以用脚本一键创建文章并自动更新索引：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\new-post.ps1 -Title "我的新文章" -Summary "一句摘要" -Open
+```
+
+可选参数：
+- `-Slug`：自定义文件名后缀（默认从标题生成）
+- `-Open`：创建后自动打开 md 文件
+
 ## 本地自检
 
 ```powershell

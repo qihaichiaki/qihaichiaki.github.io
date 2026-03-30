@@ -14,17 +14,26 @@
       <section class="section blog-page-hero reveal">
         <p class="section-tag">BLOG</p>
         <h1 class="blog-page-title">qihai的世界 · 博客</h1>
-        <p class="lead">这里展示本地 Markdown 文章，更新即推送。</p>
+        <p class="lead">更接近主流博客站的阅读体验：专注正文、清晰导航、持续更新。</p>
       </section>
 
-      <section class="section reveal">
+      <section class="section reveal blog-reading-zone">
         <div class="blog-layout">
-          <aside id="blog-list" class="blog-list">
-            <p class="loading">正在读取文章列表...</p>
+          <aside class="blog-rail">
+            <div class="rail-title">文章目录</div>
+            <div id="blog-list" class="blog-list">
+              <p class="loading">正在读取文章列表...</p>
+            </div>
           </aside>
-          <article id="blog-content" class="blog-content">
-            <p class="loading">请选择一篇文章开始阅读。</p>
-          </article>
+
+          <div class="blog-article-wrap">
+            <header id="blog-meta" class="blog-meta">
+              <p class="loading">正在准备文章信息...</p>
+            </header>
+            <article id="blog-content" class="blog-content">
+              <p class="loading">请选择一篇文章开始阅读。</p>
+            </article>
+          </div>
         </div>
       </section>
     </main>

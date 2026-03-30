@@ -27,6 +27,7 @@ $required = @(
   "src/components/blogPage.js",
   "src/styles/main.css",
   "src/lib/markdown.js",
+  "scripts/new-post.ps1",
   "content/posts/index.json"
 )
 
