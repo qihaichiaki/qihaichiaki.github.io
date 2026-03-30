@@ -14,13 +14,17 @@
       <section class="section blog-page-hero reveal">
         <p class="section-tag">BLOG</p>
         <h1 class="blog-page-title">qihai的世界 · 博客</h1>
-        <p class="lead">更接近主流博客站的阅读体验：专注正文、清晰导航、持续更新。</p>
+        <p class="lead">聚焦阅读，按模块筛选，目录可自动回收。</p>
       </section>
 
       <section class="section reveal blog-reading-zone">
-        <div class="blog-layout">
+        <div class="blog-layout is-collapsed" id="blog-layout">
           <aside class="blog-rail">
-            <div class="rail-title">文章目录</div>
+            <div class="rail-head">
+              <div class="rail-title">文章目录</div>
+              <button id="toggle-rail" class="rail-toggle" type="button">展开目录</button>
+            </div>
+            <div id="blog-modules" class="module-tabs"></div>
             <div id="blog-list" class="blog-list">
               <p class="loading">正在读取文章列表...</p>
             </div>

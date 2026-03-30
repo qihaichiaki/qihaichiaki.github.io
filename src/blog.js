@@ -2,6 +2,7 @@
 import { parseMarkdown } from "./lib/markdown.js";
 
 document.querySelector("#app").innerHTML = blogPage();
+document.body.classList.add("blog-page");
 
 const revealNodes = document.querySelectorAll(".reveal");
 const observer = new IntersectionObserver(
@@ -18,33 +19,63 @@ const observer = new IntersectionObserver(
 
 revealNodes.forEach((node) => observer.observe(node));
 
-const selectedFile = new URLSearchParams(window.location.search).get("post");
+const urlParams = new URLSearchParams(window.location.search);
+
+const state = {
+  posts: [],
+  activeModule: urlParams.get("module") || "全部",
+  activeFile: urlParams.get("post") || "",
+  railCollapsed: true
+};
 
 const calcReadMinutes = (markdown) => {
   const chars = markdown.replace(/\s/g, "").length;
   return Math.max(1, Math.round(chars / 480));
 };
 
-const renderBlogList = (posts) => {
-  const listRoot = document.querySelector("#blog-list");
-  if (!listRoot) return;
+const getModuleOf = (post) => post.module || "杂记";
+const getModules = () => ["全部", ...new Set(state.posts.map(getModuleOf))];
+const getVisiblePosts = () =>
+  state.activeModule === "全部" ? state.posts : state.posts.filter((post) => getModuleOf(post) === state.activeModule);
 
-  if (!posts.length) {
-    listRoot.innerHTML = '<p class="empty">暂无本地文章，请上传 md 并更新索引。</p>';
+const setRailCollapsed = (collapsed) => {
+  const layout = document.querySelector("#blog-layout");
+  const toggle = document.querySelector("#toggle-rail");
+  if (!layout || !toggle) return;
+
+  state.railCollapsed = collapsed;
+  layout.classList.toggle("is-collapsed", collapsed);
+  toggle.textContent = collapsed ? "展开目录" : "收起目录";
+};
+
+const renderModuleTabs = () => {
+  const root = document.querySelector("#blog-modules");
+  if (!root) return;
+
+  const modules = getModules();
+  if (!modules.length) {
+    root.innerHTML = "";
     return;
   }
 
-  listRoot.innerHTML = posts
+  root.innerHTML = modules
     .map(
-      (post) => `
-      <button class="post-btn" data-file="${post.file}">
-        <strong>${post.title}</strong>
-        <span>${post.date}</span>
-        <em>${post.summary || ""}</em>
+      (module) => `
+      <button class="module-btn ${module === state.activeModule ? "is-active" : ""}" data-module="${module}">
+        ${module}
       </button>
     `
     )
     .join("");
+
+  root.querySelectorAll(".module-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      state.activeModule = btn.dataset.module || "全部";
+      renderModuleTabs();
+      await renderBlogListAndContent();
+      setRailCollapsed(true);
+    });
+  });
 };
 
 const setActive = (buttons, file) => {
@@ -58,7 +89,7 @@ const renderPostMeta = (post, minutes) => {
   if (!meta) return;
 
   meta.innerHTML = `
-    <p class="meta-kicker">POST</p>
+    <p class="meta-kicker">${getModuleOf(post).toUpperCase()}</p>
     <h2>${post.title}</h2>
     <div class="meta-row">
       <span>${post.date}</span>
@@ -69,6 +100,15 @@ const renderPostMeta = (post, minutes) => {
   `;
 };
 
+const syncUrl = () => {
+  const url = new URL(window.location.href);
+  url.searchParams.set("module", state.activeModule);
+  if (state.activeFile) {
+    url.searchParams.set("post", state.activeFile);
+  }
+  window.history.replaceState(null, "", url.toString());
+};
+
 const renderPostContent = async (post, buttons) => {
   const contentRoot = document.querySelector("#blog-content");
   if (!contentRoot) return;
@@ -76,52 +116,81 @@ const renderPostContent = async (post, buttons) => {
   try {
     const resp = await fetch(`./content/posts/${post.file}`);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
     const markdown = await resp.text();
     contentRoot.innerHTML = parseMarkdown(markdown);
     setActive(buttons, post.file);
     renderPostMeta(post, calcReadMinutes(markdown));
 
-    const url = new URL(window.location.href);
-    url.searchParams.set("post", post.file);
-    window.history.replaceState(null, "", url.toString());
+    state.activeFile = post.file;
+    syncUrl();
     document.title = `${post.title} | qihai的世界`;
-  } catch (_) {
+  } catch {
     contentRoot.innerHTML = '<p class="empty">文章加载失败，请检查 md 文件路径。</p>';
   }
 };
 
-const loadBlogPage = async () => {
+const renderBlogListAndContent = async () => {
+  const listRoot = document.querySelector("#blog-list");
   const contentRoot = document.querySelector("#blog-content");
 
+  if (!listRoot || !contentRoot) return;
+
+  const posts = getVisiblePosts();
+  if (!posts.length) {
+    listRoot.innerHTML = '<p class="empty">该模块下暂无文章。</p>';
+    contentRoot.innerHTML = '<p class="empty">请选择其他模块查看内容。</p>';
+    return;
+  }
+
+  const current = posts.find((post) => post.file === state.activeFile) || posts[0];
+  state.activeFile = current.file;
+
+  listRoot.innerHTML = posts
+    .map(
+      (post) => `
+      <button class="post-btn ${post.file === state.activeFile ? "is-active" : ""}" data-file="${post.file}">
+        <strong>${post.title}</strong>
+        <span>${post.date}</span>
+        <em>${post.summary || ""}</em>
+      </button>
+    `
+    )
+    .join("");
+
+  const buttons = Array.from(listRoot.querySelectorAll(".post-btn"));
+  await renderPostContent(current, buttons);
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const post = posts.find((item) => item.file === btn.dataset.file);
+      if (post) {
+        await renderPostContent(post, buttons);
+        setRailCollapsed(true);
+      }
+    });
+  });
+};
+
+const loadBlogPage = async () => {
   try {
     const resp = await fetch("./content/posts/index.json");
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
-    const posts = await resp.json();
-    renderBlogList(posts);
-    const buttons = Array.from(document.querySelectorAll(".post-btn"));
+    state.posts = await resp.json();
 
-    if (!posts.length) {
-      if (contentRoot) {
-        contentRoot.innerHTML = '<p class="empty">暂无文章内容。</p>';
-      }
-      return;
+    const modules = getModules();
+    if (!modules.includes(state.activeModule)) {
+      state.activeModule = "全部";
     }
 
-    const current = posts.find((post) => post.file === selectedFile) || posts[0];
-    await renderPostContent(current, buttons);
-
-    buttons.forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        const post = posts.find((item) => item.file === btn.dataset.file);
-        if (post) {
-          await renderPostContent(post, buttons);
-        }
-      });
-    });
-  } catch (_) {
+    renderModuleTabs();
+    setRailCollapsed(true);
+    await renderBlogListAndContent();
+  } catch {
     const listRoot = document.querySelector("#blog-list");
     const meta = document.querySelector("#blog-meta");
+    const contentRoot = document.querySelector("#blog-content");
 
     if (listRoot) {
       listRoot.innerHTML = '<p class="empty">博客索引读取失败，请检查 content/posts/index.json</p>';
@@ -135,4 +204,20 @@ const loadBlogPage = async () => {
   }
 };
 
+const setupRailToggle = () => {
+  const toggle = document.querySelector("#toggle-rail");
+  if (!toggle) return;
+
+  toggle.addEventListener("click", () => {
+    setRailCollapsed(!state.railCollapsed);
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      setRailCollapsed(true);
+    }
+  });
+};
+
+setupRailToggle();
 loadBlogPage();

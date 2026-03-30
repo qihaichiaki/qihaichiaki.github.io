@@ -2,6 +2,7 @@
   [Parameter(Mandatory = $true)]
   [string]$Title,
   [string]$Summary = "",
+  [string]$Module = "杂记",
   [string]$Slug = "",
   [switch]$Open
 )
@@ -54,6 +55,10 @@ $template = @"
 
 $Summary
 
+## 模块
+
+$Module
+
 ## 正文
 
 在这里开始写作...
@@ -77,6 +82,7 @@ $newPost = [PSCustomObject]@{
   date = $date
   file = $fileName
   summary = $Summary
+  module = $Module
 }
 
 $updated = @($newPost) + @($existing)

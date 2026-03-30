@@ -5,16 +5,27 @@ document.querySelector("#app").innerHTML = hero();
 const GITHUB_USER = "qihaichiaki";
 
 const FALLBACK_COMMITS = [
-  { name: "qihaichiaki/qihaichiaki.github.io", url: "https://github.com/qihaichiaki/qihaichiaki.github.io", text: "本地兜底数据" },
-  { name: "qihaichiaki/namica", url: "https://github.com/qihaichiaki/namica", text: "本地兜底数据" },
-  { name: "qihaichiaki/namica-editor", url: "https://github.com/qihaichiaki/namica-editor", text: "本地兜底数据" }
+  { name: "qihaichiaki/qihaichiaki.github.io", url: "https://github.com/qihaichiaki/qihaichiaki.github.io", text: "离线记录" },
+  { name: "qihaichiaki/namica", url: "https://github.com/qihaichiaki/namica", text: "离线记录" },
+  { name: "qihaichiaki/namica-editor", url: "https://github.com/qihaichiaki/namica-editor", text: "离线记录" }
 ];
 
 const FALLBACK_STARS = [
-  { name: "microsoft/vscode", url: "https://github.com/microsoft/vscode", text: "示例兜底数据" },
-  { name: "facebook/react", url: "https://github.com/facebook/react", text: "示例兜底数据" },
-  { name: "vitejs/vite", url: "https://github.com/vitejs/vite", text: "示例兜底数据" }
+  { name: "microsoft/vscode", url: "https://github.com/microsoft/vscode", text: "离线记录" },
+  { name: "facebook/react", url: "https://github.com/facebook/react", text: "离线记录" },
+  { name: "vitejs/vite", url: "https://github.com/vitejs/vite", text: "离线记录" }
 ];
+
+const CACHE_POLICY = {
+  commits: {
+    key: "qihai_cache_commits_v1",
+    ttlMs: 1000 * 60 * 60 * 6
+  },
+  stars: {
+    key: "qihai_cache_stars_v1",
+    ttlMs: 1000 * 60 * 60 * 6
+  }
+};
 
 const revealNodes = document.querySelectorAll(".reveal");
 const observer = new IntersectionObserver(
@@ -46,6 +57,52 @@ const formatDate = (iso) => {
   });
 };
 
+const formatDateTime = (iso) => {
+  if (!iso) return "";
+  const date = new Date(iso);
+  return date.toLocaleString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+};
+
+const readCache = (policy) => {
+  try {
+    const raw = localStorage.getItem(policy.key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed.items)) return null;
+
+    const savedAt = parsed.savedAt || "";
+    const ageMs = savedAt ? Date.now() - new Date(savedAt).getTime() : Number.MAX_SAFE_INTEGER;
+
+    return {
+      items: parsed.items,
+      savedAt,
+      fresh: ageMs >= 0 && ageMs < policy.ttlMs
+    };
+  } catch {
+    return null;
+  }
+};
+
+const writeCache = (policy, items) => {
+  try {
+    localStorage.setItem(
+      policy.key,
+      JSON.stringify({
+        savedAt: new Date().toISOString(),
+        items
+      })
+    );
+  } catch {
+    // ignore storage errors
+  }
+};
+
 const fetchJSON = async (url, retries = 1) => {
   let lastError = null;
 
@@ -70,7 +127,7 @@ const fetchJSON = async (url, retries = 1) => {
     } catch (error) {
       lastError = error;
       if (i < retries) {
-        await new Promise((resolve) => setTimeout(resolve, 400 * (i + 1)));
+        await new Promise((resolve) => setTimeout(resolve, 450 * (i + 1)));
       }
     }
   }
@@ -78,7 +135,7 @@ const fetchJSON = async (url, retries = 1) => {
   throw lastError;
 };
 
-const setRepoList = (containerId, items, emptyText, mapper) => {
+const setRepoList = (containerId, items, emptyText, mapper, note = "") => {
   const root = document.querySelector(containerId);
   if (!root) return;
 
@@ -87,9 +144,13 @@ const setRepoList = (containerId, items, emptyText, mapper) => {
     return;
   }
 
-  root.innerHTML = items
-    .map(
-      (item, index) => `
+  const noteHtml = note ? `<p class="cache-note">${note}</p>` : "";
+
+  root.innerHTML =
+    noteHtml +
+    items
+      .map(
+        (item, index) => `
       <a class="repo-item" href="${item.url}" target="_blank" rel="noreferrer">
         <span class="repo-index">${String(index + 1).padStart(2, "0")}</span>
         <div class="repo-main">
@@ -98,87 +159,118 @@ const setRepoList = (containerId, items, emptyText, mapper) => {
         </div>
       </a>
     `
-    )
-    .join("");
+      )
+      .join("");
 };
 
-const loadRecentCommits = async () => {
+const fetchRecentCommitItems = async () => {
   try {
     const events = await fetchJSON(`https://api.github.com/users/${GITHUB_USER}/events/public?per_page=100`, 2);
     const seen = new Set();
-    const repos = [];
+    const items = [];
 
     for (const event of events) {
       if (event.type !== "PushEvent") continue;
-
       const repoName = event.repo?.name;
       if (!repoName || seen.has(repoName)) continue;
 
       seen.add(repoName);
-      repos.push({
+      items.push({
         name: repoName,
         url: `https://github.com/${repoName}`,
-        date: event.created_at,
-        commits: event.payload?.commits?.length || 0
+        text: `${formatDate(event.created_at)} · 本次提交数 ${event.payload?.commits?.length || 0}`
       });
 
-      if (repos.length === 3) break;
+      if (items.length === 3) break;
     }
 
-    if (!repos.length) {
-      throw new Error("NO_PUSH_EVENTS");
-    }
-
-    setRepoList("#recent-works", repos, "近期没有公开 Push 记录。", (item) => {
-      return `${formatDate(item.date)} · 本次提交数 ${item.commits}`;
-    });
-    return;
-  } catch (_) {}
-
-  try {
+    if (items.length) return items;
+    throw new Error("NO_PUSH_EVENTS");
+  } catch {
     const repos = await fetchJSON(`https://api.github.com/users/${GITHUB_USER}/repos?sort=pushed&per_page=3`, 1);
     const mapped = repos.map((repo) => ({
       name: repo.full_name,
       url: repo.html_url,
-      text: `${formatDate(repo.pushed_at)} · 由最近推送时间推断`
+      text: `${formatDate(repo.pushed_at)} · 按最近推送时间`
     }));
 
     if (!mapped.length) {
       throw new Error("NO_REPOS");
     }
 
-    setRepoList("#recent-works", mapped, "近期没有公开仓库数据。", (item) => item.text);
-    return;
-  } catch (_) {}
+    return mapped;
+  }
+};
 
-  setRepoList("#recent-works", FALLBACK_COMMITS, "读取 GitHub 提交数据失败。", (item) => item.text);
+const fetchRecentStarItems = async () => {
+  const stars = await fetchJSON(
+    `https://api.github.com/users/${GITHUB_USER}/starred?per_page=3&sort=created&direction=desc`,
+    2
+  );
+
+  const mapped = stars.map((repo) => ({
+    name: repo.full_name,
+    url: repo.html_url,
+    text: `★ ${repo.stargazers_count} · ${repo.description || "暂无仓库描述"}`
+  }));
+
+  if (!mapped.length) {
+    throw new Error("NO_STARS");
+  }
+
+  return mapped;
+};
+
+const loadRecentCommits = async () => {
+  const cache = readCache(CACHE_POLICY.commits);
+
+  if (cache?.items?.length) {
+    setRepoList(
+      "#recent-works",
+      cache.items,
+      "近期没有公开提交记录。",
+      (item) => item.text,
+      cache.fresh ? `已使用缓存 · ${formatDateTime(cache.savedAt)}` : `缓存数据 · ${formatDateTime(cache.savedAt)}`
+    );
+    if (cache.fresh) return;
+  }
+
+  try {
+    const items = await fetchRecentCommitItems();
+    writeCache(CACHE_POLICY.commits, items);
+    setRepoList("#recent-works", items, "近期没有公开提交记录。", (item) => item.text);
+    return;
+  } catch {}
+
+  if (!cache?.items?.length) {
+    setRepoList("#recent-works", FALLBACK_COMMITS, "读取 GitHub 提交数据失败。", (item) => item.text, "网络不可用，暂用离线记录");
+  }
 };
 
 const loadRecentStars = async () => {
-  try {
-    const stars = await fetchJSON(
-      `https://api.github.com/users/${GITHUB_USER}/starred?per_page=3&sort=created&direction=desc`,
-      2
+  const cache = readCache(CACHE_POLICY.stars);
+
+  if (cache?.items?.length) {
+    setRepoList(
+      "#recent-stars",
+      cache.items,
+      "近期没有公开 Star 记录。",
+      (item) => item.text,
+      cache.fresh ? `已使用缓存 · ${formatDateTime(cache.savedAt)}` : `缓存数据 · ${formatDateTime(cache.savedAt)}`
     );
+    if (cache.fresh) return;
+  }
 
-    const repos = stars.map((repo) => ({
-      name: repo.full_name,
-      url: repo.html_url,
-      description: repo.description || "暂无仓库描述",
-      stars: repo.stargazers_count
-    }));
-
-    if (!repos.length) {
-      throw new Error("NO_STARS");
-    }
-
-    setRepoList("#recent-stars", repos, "近期没有公开 Star 记录。", (item) => {
-      return `★ ${item.stars} · ${item.description}`;
-    });
+  try {
+    const items = await fetchRecentStarItems();
+    writeCache(CACHE_POLICY.stars, items);
+    setRepoList("#recent-stars", items, "近期没有公开 Star 记录。", (item) => item.text);
     return;
-  } catch (_) {}
+  } catch {}
 
-  setRepoList("#recent-stars", FALLBACK_STARS, "读取 GitHub Star 数据失败。", (item) => item.text);
+  if (!cache?.items?.length) {
+    setRepoList("#recent-stars", FALLBACK_STARS, "读取 GitHub Star 数据失败。", (item) => item.text, "网络不可用，暂用离线记录");
+  }
 };
 
 const loadRecentPosts = async () => {
@@ -204,13 +296,13 @@ const loadRecentPosts = async () => {
           <span class="repo-index">${String(idx + 1).padStart(2, "0")}</span>
           <div class="repo-main">
             <strong>${post.title}</strong>
-            <p>${post.date} · ${post.summary || ""}</p>
+            <p><span class="post-module-tag">${post.module || "杂记"}</span> ${post.date} · ${post.summary || ""}</p>
           </div>
         </a>
       `
       )
       .join("");
-  } catch (error) {
+  } catch {
     root.innerHTML = '<p class="empty">博客索引读取失败，请检查 content/posts/index.json</p>';
   }
 };

@@ -9,6 +9,10 @@
 
 function inlineFormat(text) {
   return text
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, alt, src) => {
+      const label = alt || src;
+      return `<span class="md-image-note">[图片资源] ${label}</span>`;
+    })
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
