@@ -28,7 +28,8 @@ const state = {
   tocCollapsed: window.matchMedia("(max-width: 1160px)").matches,
   tocObserver: null,
   topButtonVisible: false,
-  topButtonRaf: 0
+  topButtonRaf: 0,
+  topButtonAnimTimer: 0
 };
 
 const escapeText = (value) =>
@@ -93,6 +94,9 @@ const syncTopButtonVisibility = () => {
 
   state.topButtonVisible = shouldShow;
   topButton.classList.toggle("is-visible", shouldShow);
+  if (!shouldShow) {
+    topButton.classList.remove("is-jump");
+  }
 };
 
 const scheduleTopButtonSync = () => {
@@ -370,7 +374,23 @@ const setupInteractions = () => {
   }
 
   const scrollToTop = () => {
+    if (state.tocCollapsed) {
+      setTocCollapsed(false);
+    }
+
+    if (topButton) {
+      topButton.classList.add("is-jump");
+      if (state.topButtonAnimTimer) {
+        window.clearTimeout(state.topButtonAnimTimer);
+      }
+      state.topButtonAnimTimer = window.setTimeout(() => {
+        topButton.classList.remove("is-jump");
+        state.topButtonAnimTimer = 0;
+      }, 560);
+    }
+
     window.scrollTo({ top: 0, behavior: "smooth" });
+    scheduleTopButtonSync();
   };
 
   if (topButton) {

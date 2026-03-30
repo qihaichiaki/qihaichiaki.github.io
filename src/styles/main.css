@@ -421,19 +421,22 @@ h1 {
 .blog-reading-layout {
   --rail-top: 76px;
   --top-btn-height: 36px;
+  --article-width: min(1040px, calc(100vw - 76px));
+  --rail-width: clamp(176px, 22%, 246px);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(176px, 22%, 246px);
+  grid-template-columns: minmax(0, var(--article-width)) minmax(0, var(--rail-width));
   justify-content: center;
   align-items: start;
   gap: clamp(14px, 2.6vw, 28px);
   width: min(1320px, 100%);
   margin: 0 auto;
   overflow-x: clip;
-  transition: gap 220ms ease;
+  transition: grid-template-columns 240ms ease, gap 240ms ease;
 }
 
 .blog-reading-layout.is-rail-collapsed {
-  gap: clamp(14px, 2.6vw, 28px);
+  grid-template-columns: minmax(0, var(--article-width)) 0;
+  gap: 0;
 }
 
 .blog-article-wrap {
@@ -465,7 +468,7 @@ h1 {
 }
 
 .blog-reading-layout.is-rail-collapsed .blog-right-stack {
-  transform: translateX(calc(100% + 28px));
+  transform: translateX(24px);
   opacity: 0;
   pointer-events: none;
 }
@@ -479,7 +482,8 @@ h1 {
   background: rgba(255, 255, 255, 0.84);
   padding: 10px 10px 12px;
   min-height: 150px;
-  max-height: calc(100svh - var(--rail-top) - var(--top-btn-height) - 18px);
+  max-height: calc(100vh - var(--rail-top) - 16px);
+  max-height: calc(100dvh - var(--rail-top) - 16px);
   overflow: hidden;
   transition: padding 180ms ease, border-radius 180ms ease, background-color 180ms ease;
 }
@@ -752,7 +756,7 @@ h1 {
 .floating-top-btn {
   position: fixed;
   right: 0;
-  top: 33%;
+  top: clamp(100px, 28dvh, 320px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -784,6 +788,10 @@ h1 {
   transform: translateX(0) scale(1);
 }
 
+.floating-top-btn.is-jump {
+  animation: topBookmarkJump 520ms ease;
+}
+
 .floating-top-btn:hover {
   box-shadow: 0 18px 36px rgba(19, 34, 106, 0.4);
 }
@@ -791,7 +799,7 @@ h1 {
 .toc-bookmark {
   position: fixed;
   right: 0;
-  top: 52%;
+  top: clamp(210px, 53dvh, 620px);
   width: 30px;
   min-height: 90px;
   transform: translateX(calc(100% + 10px)) scale(0.96);
@@ -880,6 +888,18 @@ h1 {
   }
 }
 
+@keyframes topBookmarkJump {
+  0% {
+    transform: translateX(0) scale(1);
+  }
+  40% {
+    transform: translateX(-3px) scale(1.05);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
 @media (max-width: 900px) {
   .hero-shell {
     grid-template-columns: 1fr;
@@ -896,7 +916,9 @@ h1 {
   }
 
   .blog-reading-layout {
-    grid-template-columns: minmax(0, 1fr) clamp(166px, 24%, 220px);
+    --article-width: min(920px, calc(100vw - 54px));
+    --rail-width: clamp(166px, 24%, 220px);
+    grid-template-columns: minmax(0, var(--article-width)) minmax(0, var(--rail-width));
     gap: 14px;
   }
 
