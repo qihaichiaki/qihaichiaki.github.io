@@ -34,6 +34,11 @@
             <button id="back-to-catalog" class="btn btn-sub" type="button">返回博客目录</button>
           </div>
 
+          <button id="scroll-top-right" class="floating-top-btn" type="button" aria-label="回到顶部">
+            <span aria-hidden="true">↑</span>
+            <span>回到顶部</span>
+          </button>
+
           <div class="blog-reading-layout" id="blog-reading-layout">
             <div class="blog-article-wrap">
               <header id="blog-meta" class="blog-meta">
@@ -45,10 +50,6 @@
             </div>
 
             <div id="blog-right-stack" class="blog-right-stack">
-              <button id="scroll-top-right" class="rail-top-btn" type="button">
-                <span aria-hidden="true">↑</span>
-                <span>回到顶部</span>
-              </button>
               <aside id="blog-right-rail" class="blog-right-rail">
                 <div class="right-rail-head">
                   <p class="rail-title">文章内目录</p>
@@ -63,7 +64,7 @@
             </div>
           </div>
 
-          <button id="toc-bookmark" class="toc-bookmark" type="button" aria-label="展开文章目录">目录</button>
+          <button id="toc-bookmark" class="toc-bookmark" type="button" aria-label="展开文章目录">目录 &gt;</button>
         </div>
       </section>
     </main>
