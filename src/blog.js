@@ -26,7 +26,9 @@ const state = {
   activeFile: urlParams.get("post") || "",
   view: urlParams.get("post") ? "detail" : "catalog",
   tocCollapsed: window.matchMedia("(max-width: 1160px)").matches,
-  tocObserver: null
+  tocObserver: null,
+  topButtonVisible: false,
+  topButtonRaf: 0
 };
 
 const escapeText = (value) =>
@@ -85,8 +87,20 @@ const syncTopButtonVisibility = () => {
   const topButton = document.querySelector("#scroll-top-right");
   if (!topButton) return;
 
-  const visible = state.view === "detail" && window.scrollY > 220;
-  topButton.classList.toggle("is-visible", visible);
+  const scrollY = window.scrollY || window.pageYOffset || 0;
+  const shouldShow = state.view === "detail" && scrollY > (state.topButtonVisible ? 140 : 240);
+  if (shouldShow === state.topButtonVisible) return;
+
+  state.topButtonVisible = shouldShow;
+  topButton.classList.toggle("is-visible", shouldShow);
+};
+
+const scheduleTopButtonSync = () => {
+  if (state.topButtonRaf) return;
+  state.topButtonRaf = window.requestAnimationFrame(() => {
+    state.topButtonRaf = 0;
+    syncTopButtonVisibility();
+  });
 };
 
 const setView = (view) => {
@@ -363,8 +377,8 @@ const setupInteractions = () => {
     topButton.addEventListener("click", scrollToTop);
   }
 
-  window.addEventListener("scroll", syncTopButtonVisibility, { passive: true });
-  window.addEventListener("resize", syncTopButtonVisibility);
+  window.addEventListener("scroll", scheduleTopButtonSync, { passive: true });
+  window.addEventListener("resize", scheduleTopButtonSync);
   syncTopButtonVisibility();
 
   window.addEventListener("keydown", (event) => {

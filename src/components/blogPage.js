@@ -34,11 +34,6 @@
             <button id="back-to-catalog" class="btn btn-sub" type="button">返回博客目录</button>
           </div>
 
-          <button id="scroll-top-right" class="floating-top-btn" type="button" aria-label="回到顶部">
-            <span aria-hidden="true">↑</span>
-            <span>回到顶部</span>
-          </button>
-
           <div class="blog-reading-layout" id="blog-reading-layout">
             <div class="blog-article-wrap">
               <header id="blog-meta" class="blog-meta">
@@ -49,22 +44,27 @@
               </article>
             </div>
 
-            <div id="blog-right-stack" class="blog-right-stack">
-              <aside id="blog-right-rail" class="blog-right-rail">
-                <div class="right-rail-head">
-                  <p class="rail-title">文章内目录</p>
-                  <button id="toggle-right-rail" class="rail-collapse-btn" type="button" aria-label="收起文章内目录">
-                    <span class="rail-collapse-icon" aria-hidden="true">&lt;</span>
-                  </button>
-                </div>
-                <nav id="article-toc" class="article-toc" aria-label="当前文章目录">
-                  <p class="loading">正在生成文章目录...</p>
-                </nav>
-              </aside>
+            <div class="blog-rail-column">
+              <button id="scroll-top-right" class="floating-top-btn" type="button" aria-label="回到顶部">
+                <span aria-hidden="true">↑</span>
+                <span>回到顶部</span>
+              </button>
+              <div id="blog-right-stack" class="blog-right-stack">
+                <aside id="blog-right-rail" class="blog-right-rail">
+                  <div class="right-rail-head">
+                    <p class="rail-title">文章内目录</p>
+                    <button id="toggle-right-rail" class="rail-collapse-btn" type="button" aria-label="收起文章内目录">
+                      <span class="rail-collapse-icon" aria-hidden="true">&lt;</span>
+                    </button>
+                  </div>
+                  <nav id="article-toc" class="article-toc" aria-label="当前文章目录">
+                    <p class="loading">正在生成文章目录...</p>
+                  </nav>
+                </aside>
+              </div>
+              <button id="toc-bookmark" class="toc-bookmark" type="button" aria-label="展开文章目录">目录 &gt;</button>
             </div>
           </div>
-
-          <button id="toc-bookmark" class="toc-bookmark" type="button" aria-label="展开文章目录">目录 &gt;</button>
         </div>
       </section>
     </main>
