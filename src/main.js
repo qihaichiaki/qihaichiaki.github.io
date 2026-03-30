@@ -19,13 +19,16 @@ const FALLBACK_STARS = [
 const CACHE_POLICY = {
   commits: {
     key: "qihai_cache_commits_v1",
-    ttlMs: 1000 * 60 * 60 * 6
+    ttlMs: 1000 * 60 * 60 * 12
   },
   stars: {
     key: "qihai_cache_stars_v1",
-    ttlMs: 1000 * 60 * 60 * 6
+    ttlMs: 1000 * 60 * 60 * 12
   }
 };
+
+const SNAPSHOT_URL = "./content/github-snapshot.json";
+let snapshotPromise = null;
 
 const revealNodes = document.querySelectorAll(".reveal");
 const observer = new IntersectionObserver(
@@ -69,6 +72,12 @@ const formatDateTime = (iso) => {
   });
 };
 
+const trimText = (text, max = 90) => {
+  const value = String(text || "");
+  if (value.length <= max) return value;
+  return `${value.slice(0, max)}...`;
+};
+
 const readCache = (policy) => {
   try {
     const raw = localStorage.getItem(policy.key);
@@ -103,6 +112,15 @@ const writeCache = (policy, items) => {
   }
 };
 
+const loadSnapshot = async () => {
+  if (!snapshotPromise) {
+    snapshotPromise = fetch(SNAPSHOT_URL)
+      .then((resp) => (resp.ok ? resp.json() : null))
+      .catch(() => null);
+  }
+  return snapshotPromise;
+};
+
 const fetchJSON = async (url, retries = 1) => {
   let lastError = null;
 
@@ -112,8 +130,7 @@ const fetchJSON = async (url, retries = 1) => {
       const timeout = setTimeout(() => controller.abort(), 8000);
       const resp = await fetch(url, {
         headers: {
-          Accept: "application/vnd.github+json",
-          "X-GitHub-Api-Version": "2022-11-28"
+          Accept: "application/vnd.github+json"
         },
         signal: controller.signal
       });
@@ -184,6 +201,20 @@ const fetchRecentCommitItems = async () => {
       if (items.length === 3) break;
     }
 
+    if (items.length < 3) {
+      const repos = await fetchJSON(`https://api.github.com/users/${GITHUB_USER}/repos?sort=pushed&per_page=6`, 1);
+      for (const repo of repos) {
+        if (!repo?.full_name || seen.has(repo.full_name)) continue;
+        seen.add(repo.full_name);
+        items.push({
+          name: repo.full_name,
+          url: repo.html_url,
+          text: `${formatDate(repo.pushed_at)} · 按最近推送时间`
+        });
+        if (items.length === 3) break;
+      }
+    }
+
     if (items.length) return items;
     throw new Error("NO_PUSH_EVENTS");
   } catch {
@@ -211,7 +242,7 @@ const fetchRecentStarItems = async () => {
   const mapped = stars.map((repo) => ({
     name: repo.full_name,
     url: repo.html_url,
-    text: `★ ${repo.stargazers_count} · ${repo.description || "暂无仓库描述"}`
+    text: `★ ${repo.stargazers_count} · ${trimText(repo.description || "暂无仓库描述", 72)}`
   }));
 
   if (!mapped.length) {
@@ -242,9 +273,30 @@ const loadRecentCommits = async () => {
     return;
   } catch {}
 
-  if (!cache?.items?.length) {
-    setRepoList("#recent-works", FALLBACK_COMMITS, "读取 GitHub 提交数据失败。", (item) => item.text, "网络不可用，暂用离线记录");
+  if (cache?.items?.length) {
+    setRepoList(
+      "#recent-works",
+      cache.items,
+      "近期没有公开提交记录。",
+      (item) => item.text,
+      `网络不可用，已显示缓存 · ${formatDateTime(cache.savedAt)}`
+    );
+    return;
   }
+
+  const snapshot = await loadSnapshot();
+  if (snapshot?.commits?.length) {
+    setRepoList(
+      "#recent-works",
+      snapshot.commits,
+      "近期没有公开提交记录。",
+      (item) => item.text,
+      snapshot.generatedAt ? `离线快照 · ${formatDateTime(snapshot.generatedAt)}` : "离线快照"
+    );
+    return;
+  }
+
+  setRepoList("#recent-works", FALLBACK_COMMITS, "读取 GitHub 提交数据失败。", (item) => item.text, "网络不可用，暂用离线记录");
 };
 
 const loadRecentStars = async () => {
@@ -268,9 +320,30 @@ const loadRecentStars = async () => {
     return;
   } catch {}
 
-  if (!cache?.items?.length) {
-    setRepoList("#recent-stars", FALLBACK_STARS, "读取 GitHub Star 数据失败。", (item) => item.text, "网络不可用，暂用离线记录");
+  if (cache?.items?.length) {
+    setRepoList(
+      "#recent-stars",
+      cache.items,
+      "近期没有公开 Star 记录。",
+      (item) => item.text,
+      `网络不可用，已显示缓存 · ${formatDateTime(cache.savedAt)}`
+    );
+    return;
   }
+
+  const snapshot = await loadSnapshot();
+  if (snapshot?.stars?.length) {
+    setRepoList(
+      "#recent-stars",
+      snapshot.stars,
+      "近期没有公开 Star 记录。",
+      (item) => item.text,
+      snapshot.generatedAt ? `离线快照 · ${formatDateTime(snapshot.generatedAt)}` : "离线快照"
+    );
+    return;
+  }
+
+  setRepoList("#recent-stars", FALLBACK_STARS, "读取 GitHub Star 数据失败。", (item) => item.text, "网络不可用，暂用离线记录");
 };
 
 const loadRecentPosts = async () => {
