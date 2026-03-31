@@ -1,8 +1,12 @@
 ﻿import { hero } from "./components/hero.js";
 import { setupThemeToggle } from "./lib/theme.js";
+import { initNebulaBackground } from "./lib/nebulaBackground.js";
+import { initHeroMagicCircle } from "./lib/magicCircle.js";
 
 document.querySelector("#app").innerHTML = hero();
 setupThemeToggle();
+initNebulaBackground();
+initHeroMagicCircle();
 
 const GITHUB_USER = "qihaichiaki";
 

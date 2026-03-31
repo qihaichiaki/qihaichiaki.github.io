@@ -1,10 +1,12 @@
 ﻿import { blogPage } from "./components/blogPage.js";
 import { parseMarkdown } from "./lib/markdown.js";
 import { setupThemeToggle } from "./lib/theme.js";
+import { initNebulaBackground } from "./lib/nebulaBackground.js";
 
 document.querySelector("#app").innerHTML = blogPage();
 document.body.classList.add("blog-page");
 setupThemeToggle();
+initNebulaBackground();
 
 const revealNodes = document.querySelectorAll(".reveal");
 const revealObserver = new IntersectionObserver(
