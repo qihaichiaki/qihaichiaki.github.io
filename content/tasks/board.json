@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "title": "qihai task board",
+  "updatedAt": "2026-04-01T06:48:07.039Z",
+  "updatedBy": "qihaichiaki",
+  "columns": [
+    {
+      "id": "backlog",
+      "title": "待整理",
+      "taskIds": []
+    },
+    {
+      "id": "active",
+      "title": "进行中",
+      "taskIds": [
+        "task-ixhqbn70"
+      ]
+    },
+    {
+      "id": "done",
+      "title": "已完成",
+      "taskIds": []
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task-ixhqbn70",
+      "title": "新的任务",
+      "description": "",
+      "tags": [],
+      "columnId": "active",
+      "createdAt": "2026-04-01T06:48:04.343Z",
+      "updatedAt": "2026-04-01T06:48:04.343Z"
+    }
+  ]
+}
