@@ -1,7 +1,7 @@
 {
   "version": 1,
   "title": "qihai task board",
-  "updatedAt": "2026-04-01T06:48:20.430Z",
+  "updatedAt": "2026-04-01T06:48:26.732Z",
   "updatedBy": "qihaichiaki",
   "columns": [
     {
@@ -12,10 +12,7 @@
     {
       "id": "active",
       "title": "进行中",
-      "taskIds": [
-        "task-f1m36xa1",
-        "task-ixhqbn70"
-      ]
+      "taskIds": []
     },
     {
       "id": "done",
@@ -23,24 +20,5 @@
       "taskIds": []
     }
   ],
-  "tasks": [
-    {
-      "id": "task-ixhqbn70",
-      "title": "新的任务",
-      "description": "",
-      "tags": [],
-      "columnId": "active",
-      "createdAt": "2026-04-01T06:48:04.343Z",
-      "updatedAt": "2026-04-01T06:48:13.730Z"
-    },
-    {
-      "id": "task-f1m36xa1",
-      "title": "新的任务",
-      "description": "",
-      "tags": [],
-      "columnId": "active",
-      "createdAt": "2026-04-01T06:48:18.191Z",
-      "updatedAt": "2026-04-01T06:48:18.191Z"
-    }
-  ]
+  "tasks": []
 }
