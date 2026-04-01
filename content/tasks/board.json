@@ -1,7 +1,7 @@
 {
   "version": 1,
   "title": "qihai task board",
-  "updatedAt": "2026-04-01T09:56:07.501Z",
+  "updatedAt": "2026-04-01T09:56:49.518Z",
   "updatedBy": "qihaichiaki",
   "columns": [
     {
@@ -38,12 +38,14 @@
     },
     {
       "id": "task-khei7hh0",
-      "title": "新的任务",
-      "description": "",
-      "tags": [],
+      "title": "顶部栏UI问题",
+      "description": "完成用户状态统一",
+      "tags": [
+        "BUG"
+      ],
       "columnId": "active",
       "createdAt": "2026-04-01T09:55:54.526Z",
-      "updatedAt": "2026-04-01T09:56:05.802Z"
+      "updatedAt": "2026-04-01T09:56:45.480Z"
     }
   ]
 }
