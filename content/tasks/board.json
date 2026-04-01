@@ -1,7 +1,7 @@
 {
   "version": 1,
   "title": "qihai task board",
-  "updatedAt": "2026-04-01T06:48:26.732Z",
+  "updatedAt": "2026-04-01T07:07:19.977Z",
   "updatedBy": "qihaichiaki",
   "columns": [
     {
@@ -12,7 +12,9 @@
     {
       "id": "active",
       "title": "进行中",
-      "taskIds": []
+      "taskIds": [
+        "task-sx0m71gt"
+      ]
     },
     {
       "id": "done",
@@ -20,5 +22,17 @@
       "taskIds": []
     }
   ],
-  "tasks": []
+  "tasks": [
+    {
+      "id": "task-sx0m71gt",
+      "title": "测试",
+      "description": "这是任务版同步的测试",
+      "tags": [
+        "测试"
+      ],
+      "columnId": "active",
+      "createdAt": "2026-04-01T07:06:05.535Z",
+      "updatedAt": "2026-04-01T07:07:06.306Z"
+    }
+  ]
 }
