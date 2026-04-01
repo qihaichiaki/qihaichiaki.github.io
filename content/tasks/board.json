@@ -1,7 +1,7 @@
 {
   "version": 1,
   "title": "qihai task board",
-  "updatedAt": "2026-04-01T07:07:19.977Z",
+  "updatedAt": "2026-04-01T08:11:55.737Z",
   "updatedBy": "qihaichiaki",
   "columns": [
     {
@@ -12,27 +12,27 @@
     {
       "id": "active",
       "title": "进行中",
-      "taskIds": [
-        "task-sx0m71gt"
-      ]
+      "taskIds": []
     },
     {
       "id": "done",
       "title": "已完成",
-      "taskIds": []
+      "taskIds": [
+        "task-sx0m71gt"
+      ]
     }
   ],
   "tasks": [
     {
       "id": "task-sx0m71gt",
-      "title": "测试",
-      "description": "这是任务版同步的测试",
+      "title": "任务版实现",
+      "description": "完成任务版实现",
       "tags": [
-        "测试"
+        "WEB"
       ],
-      "columnId": "active",
+      "columnId": "done",
       "createdAt": "2026-04-01T07:06:05.535Z",
-      "updatedAt": "2026-04-01T07:07:06.306Z"
+      "updatedAt": "2026-04-01T08:11:53.397Z"
     }
   ]
 }
