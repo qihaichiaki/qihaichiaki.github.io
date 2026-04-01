@@ -1,13 +1,16 @@
 {
   "version": 1,
   "title": "qihai task board",
-  "updatedAt": "2026-04-01T10:41:20.898Z",
+  "updatedAt": "2026-04-01T15:52:00.868Z",
   "updatedBy": "qihaichiaki",
   "columns": [
     {
       "id": "backlog",
       "title": "待整理",
-      "taskIds": []
+      "taskIds": [
+        "task-92yam3c6",
+        "task-rfuih7ji"
+      ]
     },
     {
       "id": "active",
@@ -45,6 +48,28 @@
       "columnId": "done",
       "createdAt": "2026-04-01T09:55:54.526Z",
       "updatedAt": "2026-04-01T10:41:18.625Z"
+    },
+    {
+      "id": "task-rfuih7ji",
+      "title": "namica仓库复习",
+      "description": "复习全框架流程，准备后续的跟进",
+      "tags": [
+        "引擎开发"
+      ],
+      "columnId": "backlog",
+      "createdAt": "2026-04-01T15:49:57.222Z",
+      "updatedAt": "2026-04-01T15:50:52.505Z"
+    },
+    {
+      "id": "task-92yam3c6",
+      "title": "facepattern主流程测试代码完善",
+      "description": "模拟copy，transfer灯操作测试完成face pattern",
+      "tags": [
+        "工作"
+      ],
+      "columnId": "backlog",
+      "createdAt": "2026-04-01T15:50:55.529Z",
+      "updatedAt": "2026-04-01T15:51:50.494Z"
     }
   ]
 }
