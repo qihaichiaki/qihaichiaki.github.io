@@ -1,7 +1,7 @@
 {
   "version": 1,
   "title": "qihai task board",
-  "updatedAt": "2026-04-01T06:48:07.039Z",
+  "updatedAt": "2026-04-01T06:48:16.183Z",
   "updatedBy": "qihaichiaki",
   "columns": [
     {
@@ -30,7 +30,7 @@
       "tags": [],
       "columnId": "active",
       "createdAt": "2026-04-01T06:48:04.343Z",
-      "updatedAt": "2026-04-01T06:48:04.343Z"
+      "updatedAt": "2026-04-01T06:48:13.730Z"
     }
   ]
 }
