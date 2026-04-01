@@ -1,10 +1,14 @@
 ﻿import { hero } from "./components/hero.js";
-import { setupThemeToggle } from "./lib/theme.js";
+import { siteHeader } from "./components/siteHeader.js";
 import { initNebulaBackground } from "./lib/nebulaBackground.js";
 import { initHeroMagicCircle } from "./lib/magicCircle.js";
+import { initSiteHeaderAuth } from "./lib/siteHeaderAuth.js";
+import { fetchRemoteBoard, hasRemoteApi } from "./lib/tasksApi.js";
+import { normalizeBoard } from "./lib/tasksModel.js";
 
-document.querySelector("#app").innerHTML = hero();
-setupThemeToggle();
+document.querySelector("#app").innerHTML = renderPageWithHeader(hero(), { homeHref: "#top", currentPage: "home" });
+mountHomeTaskPreviewSection();
+const headerStatePromise = initSiteHeaderAuth();
 initNebulaBackground();
 initHeroMagicCircle();
 
@@ -20,6 +24,40 @@ const CACHE_POLICY = {
     ttlMs: 1000 * 60 * 60 * 2
   }
 };
+
+function renderPageWithHeader(markup, headerOptions) {
+  return `${siteHeader(headerOptions)}${String(markup || "").replace(/^\s*<header class="site-header">[\s\S]*?<\/header>\s*/, "")}`;
+}
+
+function mountHomeTaskPreviewSection() {
+  if (document.querySelector("#home-task-board-preview")) {
+    return;
+  }
+
+  const anchorSection = document.querySelector("#works") || document.querySelector("#contact");
+  if (!anchorSection) {
+    return;
+  }
+
+  const section = document.createElement("section");
+  section.id = "task-board-preview-section";
+  section.className = "section reveal";
+  section.innerHTML = `
+    <div class="home-tasks-head">
+      <div>
+        <p class="section-tag">TASK BOARD</p>
+        <h2>任务板概览</h2>
+        <p class="tasks-preview-lead">展示仓库中的当前任务板快照；进入任务板页后再做编辑与同步。</p>
+      </div>
+      <a class="btn btn-sub" href="./tasks.html">打开任务板</a>
+    </div>
+    <div id="home-task-board-preview" class="home-task-board-preview">
+      <p class="loading">正在读取任务板...</p>
+    </div>
+  `;
+
+  anchorSection.insertAdjacentElement("beforebegin", section);
+}
 
 const revealNodes = document.querySelectorAll(".reveal");
 const observer = new IntersectionObserver(
@@ -68,6 +106,14 @@ const trimText = (text, max = 90) => {
   if (value.length <= max) return value;
   return `${value.slice(0, max)}...`;
 };
+
+const escapeText = (value) =>
+  String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 
 const readCache = (policy) => {
   try {
@@ -364,8 +410,92 @@ const loadRecentPosts = async () => {
   }
 };
 
+const renderTaskPreview = (board) => {
+  const root = document.querySelector("#home-task-board-preview");
+  if (!root) return;
+
+  const normalizedBoard = normalizeBoard(board);
+  const taskMap = new Map(normalizedBoard.tasks.map((task) => [task.id, task]));
+
+  root.innerHTML = `
+    <div class="tasks-board-columns tasks-board-columns-preview">
+      ${normalizedBoard.columns
+        .map((column) => {
+          const cards = column.taskIds
+            .map((taskId) => taskMap.get(taskId))
+            .filter(Boolean)
+            .map(
+              (task) => `
+                <article class="task-card task-card-preview">
+                  <h3>${escapeText(task.title)}</h3>
+                  <p>${escapeText(task.description || "暂无任务说明。")}</p>
+                  <div class="task-tags">
+                    ${
+                      task.tags.length
+                        ? task.tags.map((tag) => `<span class="task-chip">${escapeText(tag)}</span>`).join("")
+                        : '<span class="task-chip task-chip-muted">未设置标签</span>'
+                    }
+                  </div>
+                </article>
+              `
+            )
+            .join("");
+
+          return `
+            <section class="task-column task-column-preview" data-column-id="${escapeText(column.id)}">
+              <header class="task-column-head">
+                <div>
+                  <p class="section-tag">${escapeText(column.id.toUpperCase())}</p>
+                  <h3>${escapeText(column.title)}</h3>
+                </div>
+                <span class="task-column-count">${column.taskIds.length}</span>
+              </header>
+              <div class="task-column-body">
+                ${cards || '<p class="task-column-empty">当前列还没有任务。</p>'}
+              </div>
+            </section>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+};
+
+const loadTaskPreview = async () => {
+  const root = document.querySelector("#home-task-board-preview");
+  if (!root) return;
+
+  try {
+    const headerState = await headerStatePromise;
+    let board = null;
+
+    if (hasRemoteApi(headerState?.config)) {
+      try {
+        const remoteBoard = await fetchRemoteBoard(headerState.config);
+        board = remoteBoard?.board || null;
+      } catch {
+        board = null;
+      }
+    }
+
+    if (!board) {
+      const response = await fetch("./content/tasks/board.json", { cache: "no-cache" });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      board = await response.json();
+    }
+
+    renderTaskPreview(board);
+  } catch {
+    root.innerHTML = '<p class="empty">任务板快照读取失败，请检查 content/tasks/board.json。</p>';
+  }
+};
+
 setScrollShift();
 window.addEventListener("scroll", setScrollShift, { passive: true });
 loadRecentCommits();
 loadRecentStars();
 loadRecentPosts();
+loadTaskPreview();

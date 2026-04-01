@@ -1,13 +1,10 @@
 ﻿import { tasksPage } from "./components/tasksPage.js";
-import { setupThemeToggle } from "./lib/theme.js";
+import { siteHeader } from "./components/siteHeader.js";
 import { initNebulaBackground } from "./lib/nebulaBackground.js";
-import { loadSiteConfig } from "./lib/siteConfig.js";
+import { initSiteHeaderAuth } from "./lib/siteHeaderAuth.js";
 import {
-  buildAuthStartUrl,
   fetchRemoteBoard,
-  fetchSession,
   hasRemoteApi,
-  logoutRemoteSession,
   pushRemoteBoard
 } from "./lib/tasksApi.js";
 import {
@@ -22,10 +19,19 @@ import {
 } from "./lib/tasksModel.js";
 import { loadTaskState, saveTaskState } from "./lib/tasksStore.js";
 
-document.querySelector("#app").innerHTML = tasksPage();
+document.querySelector("#app").innerHTML = renderPageWithHeader(tasksPage(), { homeHref: "./index.html#top", currentPage: "tasks" });
 document.body.classList.add("tasks-page");
-setupThemeToggle();
 initNebulaBackground();
+
+const headerStatePromise = initSiteHeaderAuth({
+  onSessionChange: async ({ session }) => {
+    await handleHeaderSessionChange(session);
+  }
+});
+
+function renderPageWithHeader(markup, headerOptions) {
+  return `${siteHeader(headerOptions)}${String(markup || "").replace(/^\s*<header class="site-header">[\s\S]*?<\/header>\s*/, "")}`;
+}
 
 const revealNodes = document.querySelectorAll(".reveal");
 const revealObserver = new IntersectionObserver(
@@ -495,18 +501,55 @@ const discardLocalChanges = async () => {
   }
 };
 
+async function handleHeaderSessionChange(session) {
+  state.session = {
+    authenticated: false,
+    canEdit: false,
+    login: "",
+    mode: hasRemoteApi(state.config) ? "remote" : "local",
+    ...(session && typeof session === "object" ? session : {})
+  };
+
+  if (!state.session.canEdit) {
+    state.draftBoard = cloneBoard(state.board);
+    state.editingTaskIds.clear();
+  }
+
+  await persistState();
+  renderTopBar();
+  renderBoard();
+
+  if (!hasRemoteApi(state.config)) {
+    setSyncState("local", "当前未配置 Worker 地址，任务板只保存在浏览器本地。");
+    return;
+  }
+
+  if (state.session.canEdit) {
+    setSyncState(
+      state.pendingSync ? "pending" : "saved",
+      state.pendingSync ? "GitHub 连接状态已恢复，当前存在待同步修改。" : "已连接 GitHub，可以继续编辑并手动同步任务板。"
+    );
+    return;
+  }
+
+  setSyncState(
+    "readonly",
+    state.session.authenticated
+      ? "当前登录账号没有任务板写权限。"
+      : "当前是只读浏览模式。请在右上角菜单中连接 GitHub，之后才允许同步到仓库。"
+  );
+}
+
 const renderTopBar = () => {
   const modeCopy = document.querySelector("#tasks-mode-copy");
   const modeBadge = document.querySelector("#task-mode-badge");
   const syncBadge = document.querySelector("#task-sync-badge");
   const alert = document.querySelector("#tasks-alert");
   const meta = document.querySelector("#tasks-board-meta");
-  const loginButton = document.querySelector("#task-login-button");
   const syncButton = document.querySelector("#task-sync-button");
   const discardButton = document.querySelector("#task-discard-button");
-  const logoutButton = document.querySelector("#task-logout-button");
 
-  if (!modeCopy || !modeBadge || !syncBadge || !alert || !meta || !loginButton || !syncButton || !discardButton || !logoutButton) {
+  if (!modeCopy || !modeBadge || !syncBadge || !alert || !meta || !syncButton || !discardButton) {
     return;
   }
 
@@ -535,7 +578,9 @@ const renderTopBar = () => {
     modeBadge.textContent = "可编辑";
     modeBadge.className = "task-pill task-pill-live";
   } else {
-    modeCopy.textContent = "当前是只读浏览模式。登录 GitHub 后，才允许把任务板写回仓库。";
+    modeCopy.textContent = state.session.authenticated
+      ? "当前登录账号没有任务板写权限。任务板会保持只读展示。"
+      : "当前是只读浏览模式。请在右上角菜单中连接 GitHub，之后才允许把任务板写回仓库。";
     modeBadge.textContent = state.session.authenticated ? "权限不足" : "只读访客";
     modeBadge.className = "task-pill task-pill-readonly";
   }
@@ -554,11 +599,6 @@ const renderTopBar = () => {
     <span>SHA ${escapeText(state.baseSha ? state.baseSha.slice(0, 7) : "local")}</span>
   `;
 
-  loginButton.classList.toggle("is-hidden", !hasRemoteApi(state.config) || state.session.authenticated);
-  if (!loginButton.classList.contains("is-hidden")) {
-    loginButton.href = buildAuthStartUrl(state.config, window.location.href);
-  }
-
   syncButton.classList.toggle("is-hidden", !(canSync() && (state.pendingSync || state.syncInFlight)));
   syncButton.disabled = state.syncInFlight || !state.online || state.hasDraft || !state.pendingSync;
   if (state.syncInFlight) {
@@ -569,8 +609,6 @@ const renderTopBar = () => {
 
   discardButton.classList.toggle("is-hidden", !(canSync() && (state.hasDraft || state.pendingSync || state.syncInFlight)));
   discardButton.disabled = state.syncInFlight || !state.online;
-
-  logoutButton.classList.toggle("is-hidden", !state.session.authenticated);
 };
 
 const renderBoard = () => {
@@ -718,7 +756,12 @@ const loadStaticBoard = async () => {
 };
 
 const bootstrapBoard = async () => {
-  state.config = await loadSiteConfig();
+  const headerState = await headerStatePromise;
+  state.config = headerState.config;
+  state.session = {
+    ...state.session,
+    ...(headerState.session || {})
+  };
 
   const [persisted, staticBoard] = await Promise.all([loadTaskState(), loadStaticBoard()]);
   let remoteBoard = null;
@@ -726,29 +769,10 @@ const bootstrapBoard = async () => {
 
   if (hasRemoteApi(state.config)) {
     try {
-      state.session = await fetchSession(state.config);
-    } catch (error) {
-      state.session = {
-        authenticated: false,
-        canEdit: false,
-        login: "",
-        mode: "remote"
-      };
-      setSyncState("error", `远端会话检查失败：${String(error?.message || "网络异常")}`);
-    }
-
-    try {
       remoteBoard = await fetchRemoteBoard(state.config);
     } catch (error) {
       remoteBoardError = error;
     }
-  } else {
-    state.session = {
-      authenticated: false,
-      canEdit: false,
-      login: "",
-      mode: "local"
-    };
   }
 
   state.syncedBoard = normalizeBoard(remoteBoard?.board || persisted.meta?.syncedBoard || staticBoard);
@@ -788,7 +812,7 @@ const bootstrapBoard = async () => {
     return;
   }
 
-  setSyncState("readonly", "当前是只读浏览模式。登录 GitHub 后，才允许同步到仓库。");
+  setSyncState("readonly", "当前是只读浏览模式。请在右上角菜单中连接 GitHub，之后才允许同步到仓库。");
 };
 
 const handleTaskFieldInput = async (element) => {
@@ -813,7 +837,6 @@ const bindInteractions = () => {
   const boardRoot = document.querySelector("#tasks-board-columns");
   const syncButton = document.querySelector("#task-sync-button");
   const discardButton = document.querySelector("#task-discard-button");
-  const logoutButton = document.querySelector("#task-logout-button");
 
   if (boardRoot) {
     boardRoot.addEventListener("click", async (event) => {
@@ -926,29 +949,6 @@ const bindInteractions = () => {
   if (discardButton) {
     discardButton.addEventListener("click", () => {
       discardLocalChanges();
-    });
-  }
-
-  if (logoutButton) {
-    logoutButton.addEventListener("click", async () => {
-      try {
-        await logoutRemoteSession(state.config);
-      } catch {
-        // ignore logout failures
-      }
-
-      state.session = {
-        authenticated: false,
-        canEdit: false,
-        login: "",
-        mode: hasRemoteApi(state.config) ? "remote" : "local"
-      };
-      state.draftBoard = cloneBoard(state.board);
-      state.editingTaskIds.clear();
-      await persistState();
-      renderTopBar();
-      renderBoard();
-      setSyncState("readonly", "已退出登录。当前任务板恢复为只读浏览状态。");
     });
   }
 

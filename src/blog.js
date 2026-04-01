@@ -1,12 +1,17 @@
 ﻿import { blogPage } from "./components/blogPage.js";
+import { siteHeader } from "./components/siteHeader.js";
 import { parseMarkdown } from "./lib/markdown.js";
-import { setupThemeToggle } from "./lib/theme.js";
 import { initNebulaBackground } from "./lib/nebulaBackground.js";
+import { initSiteHeaderAuth } from "./lib/siteHeaderAuth.js";
 
-document.querySelector("#app").innerHTML = blogPage();
+document.querySelector("#app").innerHTML = renderPageWithHeader(blogPage(), { homeHref: "./index.html#top", currentPage: "blog" });
 document.body.classList.add("blog-page");
-setupThemeToggle();
+initSiteHeaderAuth();
 initNebulaBackground();
+
+function renderPageWithHeader(markup, headerOptions) {
+  return `${siteHeader(headerOptions)}${String(markup || "").replace(/^\s*<header class="site-header">[\s\S]*?<\/header>\s*/, "")}`;
+}
 
 const revealNodes = document.querySelectorAll(".reveal");
 const revealObserver = new IntersectionObserver(

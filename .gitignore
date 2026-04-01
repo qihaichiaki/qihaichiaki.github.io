@@ -10,3 +10,5 @@ worker/*.log
 worker/*.err.log
 worker/*.jsonl
 npm-debug.log*
+.tmp-*.html
+.tmp-edge-*/

@@ -1,5 +1,5 @@
 const DEFAULT_SITE_CONFIG = {
-  apiBaseUrl: "",
+  apiBaseUrl: "https://qihai-task-board-api.yushenqihai.workers.dev",
   owner: "qihaichiaki",
   repo: "qihaichiaki.github.io",
   tasksPath: "content/tasks/board.json",

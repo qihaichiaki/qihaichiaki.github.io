@@ -4,13 +4,10 @@
       <a class="brand" href="./index.html#top">qihai</a>
       <div class="header-controls">
         <nav class="site-nav">
-          <a href="./index.html#works">提交</a>
-          <a href="./index.html#stars">Star</a>
-          <a href="./index.html#posts">最近博客</a>
-          <a href="./blog.html">博客</a>
           <a href="#top">任务板</a>
+          <a href="./blog.html">博客</a>
         </nav>
-        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换白天夜晚主题">夜晚</button>
+        <div class="site-user-area"></div>
       </div>
     </header>
 
@@ -36,10 +33,8 @@
                 <span id="task-sync-badge" class="task-pill task-pill-soft">等待初始化</span>
               </div>
               <div class="tasks-action-row">
-                <a id="task-login-button" class="btn btn-main is-hidden" href="#">登录同步</a>
                 <button id="task-sync-button" class="btn btn-main is-hidden" type="button">手动同步</button>
                 <button id="task-discard-button" class="btn btn-sub is-hidden" type="button">放弃本地修改</button>
-                <button id="task-logout-button" class="btn btn-sub is-hidden" type="button">退出登录</button>
               </div>
             </div>
           </header>

@@ -4,14 +4,10 @@
       <a class="brand" href="#top">qihai</a>
       <div class="header-controls">
         <nav class="site-nav">
-          <a href="#works">提交</a>
-          <a href="#stars">Star</a>
-          <a href="#posts">最近博客</a>
           <a href="./tasks.html">任务板</a>
           <a href="./blog.html">博客</a>
-          <a href="#contact">联系</a>
         </nav>
-        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换到夜晚主题">夜晚</button>
+        <div class="site-user-area"></div>
       </div>
     </header>
 
