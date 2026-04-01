@@ -1,0 +1,16 @@
+{
+  "name": "qihai-task-board-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8787",
+    "deploy": "wrangler deploy",
+    "check": "node --check src/index.js"
+  },
+  "devDependencies": {
+    "wrangler": "^4.11.1"
+  },
+  "dependencies": {
+    "jsrsasign": "^11.1.1"
+  }
+}

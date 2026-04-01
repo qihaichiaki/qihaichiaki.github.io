@@ -12,6 +12,10 @@
   - 模块筛选（如 C++ / Git / 杂记）
   - 目录可折叠，阅读时自动回收
   - Markdown 文章完整阅读与切换
+- 任务板页（`tasks.html`）
+  - 本地 `IndexedDB` 草稿保存
+  - 预留 GitHub 登录与仓库同步状态
+  - 任务板数据文件为 `content/tasks/board.json`
 
 ## GitHub 数据与缓存
 
@@ -66,6 +70,49 @@ powershell -ExecutionPolicy Bypass -File .\scripts\self-check.ps1
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\self-check.ps1 -Preview -KeepServer
 ```
+
+## 任务板同步配置
+
+- 站点侧配置文件：`content/site-config.json`
+- 任务板数据文件：`content/tasks/board.json`
+- Worker 项目目录：`worker/`
+
+首版默认是“本地模式”：
+
+- 如果 `content/site-config.json` 中 `apiBaseUrl` 为空，`tasks.html` 只做本地草稿保存
+- 部署好 Cloudflare Worker 后，将 `apiBaseUrl` 改为对应的 `workers.dev` 地址即可启用登录与仓库同步
+
+Worker 本地开发与部署说明见：`worker/README.md`
+
+### 任务板本地联调
+
+可以分两种方式测试：
+
+1. 前端本地预览，直连线上 Worker
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\self-check.ps1 -Preview -KeepServer
+```
+
+然后打开本地预览地址中的 `tasks.html` 即可。
+
+2. 前后端都在本地联调
+
+先启动 Worker：
+
+```powershell
+cd .\worker
+copy .dev.vars.example .dev.vars
+npm run dev
+```
+
+再启动站点本地预览，并在地址上追加本地 API 参数：
+
+```text
+http://127.0.0.1:4173/tasks.html?apiBaseUrl=http://127.0.0.1:8787
+```
+
+这样无需改动仓库中的正式 `apiBaseUrl`，只对当前本地浏览器会话生效。
 
 ## 发布到 GitHub Pages
 

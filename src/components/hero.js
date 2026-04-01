@@ -7,6 +7,7 @@
           <a href="#works">提交</a>
           <a href="#stars">Star</a>
           <a href="#posts">最近博客</a>
+          <a href="./tasks.html">任务板</a>
           <a href="./blog.html">博客</a>
           <a href="#contact">联系</a>
         </nav>
@@ -26,6 +27,7 @@
             </p>
             <div class="hero-actions">
               <a class="btn btn-main" href="#works">查看近期提交</a>
+              <a class="btn btn-sub" href="./tasks.html">进入任务板</a>
               <a class="btn btn-sub" href="./blog.html">进入博客页</a>
             </div>
           </div>

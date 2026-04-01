@@ -1,0 +1,24 @@
+{
+  "name": "qihai-task-board-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-04-01",
+  "workers_dev": true,
+  "vars": {
+    "GITHUB_OWNER": "qihaichiaki",
+    "GITHUB_REPO": "qihaichiaki.github.io",
+    "GITHUB_TASKS_PATH": "content/tasks/board.json",
+    "GITHUB_ALLOWED_LOGIN": "qihaichiaki",
+    "GITHUB_COMMITTER_NAME": "qihaichiaki",
+    "GITHUB_COMMITTER_EMAIL": "yushenqihai@gmail.com",
+    "ALLOWED_ORIGINS": "https://qihaichiaki.github.io,http://127.0.0.1:4173,http://localhost:4173"
+  },
+  "secrets": {
+    "required": [
+      "GITHUB_APP_ID",
+      "GITHUB_APP_CLIENT_ID",
+      "GITHUB_APP_CLIENT_SECRET",
+      "GITHUB_APP_PRIVATE_KEY",
+      "SESSION_SECRET"
+    ]
+  }
+}
