@@ -1,7 +1,7 @@
 {
   "version": 1,
   "title": "qihai task board",
-  "updatedAt": "2026-04-01T15:52:00.868Z",
+  "updatedAt": "2026-04-02T02:14:28.940Z",
   "updatedBy": "qihaichiaki",
   "columns": [
     {
@@ -15,7 +15,9 @@
     {
       "id": "active",
       "title": "进行中",
-      "taskIds": []
+      "taskIds": [
+        "task-abbhk9nk"
+      ]
     },
     {
       "id": "done",
@@ -70,6 +72,17 @@
       "columnId": "backlog",
       "createdAt": "2026-04-01T15:50:55.529Z",
       "updatedAt": "2026-04-01T15:51:50.494Z"
+    },
+    {
+      "id": "task-abbhk9nk",
+      "title": "博客系统开放编辑功能",
+      "description": "实现博客希望在前端的编辑功能",
+      "tags": [
+        "WEB"
+      ],
+      "columnId": "active",
+      "createdAt": "2026-04-02T02:13:40.310Z",
+      "updatedAt": "2026-04-02T02:14:25.078Z"
     }
   ]
 }
