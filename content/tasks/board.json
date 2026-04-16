@@ -1,7 +1,7 @@
 {
   "version": 1,
   "title": "qihai task board",
-  "updatedAt": "2026-04-03T02:01:21.529Z",
+  "updatedAt": "2026-04-16T09:10:49.466Z",
   "updatedBy": "qihaichiaki",
   "columns": [
     {
@@ -16,8 +16,7 @@
       "id": "active",
       "title": "进行中",
       "taskIds": [
-        "task-ayn0zv0c",
-        "task-92yam3c6"
+        "task-ayn0zv0c"
       ]
     },
     {
@@ -25,7 +24,8 @@
       "title": "已完成",
       "taskIds": [
         "task-sx0m71gt",
-        "task-khei7hh0"
+        "task-khei7hh0",
+        "task-92yam3c6"
       ]
     }
   ],
@@ -70,9 +70,9 @@
       "tags": [
         "工作"
       ],
-      "columnId": "active",
+      "columnId": "done",
       "createdAt": "2026-04-01T15:50:55.529Z",
-      "updatedAt": "2026-04-03T02:01:17.248Z"
+      "updatedAt": "2026-04-16T09:10:37.150Z"
     },
     {
       "id": "task-abbhk9nk",
