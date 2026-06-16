@@ -1,0 +1,41 @@
+﻿# vscode个人Settings
+
+```json
+{
+    // 自定义设置
+    "editor.fontFamily": "cascadia code, '微软雅黑'", // 默认字体
+    // "files.autoSave": "afterDelay",  // 自动保存文件
+    "files.autoGuessEncoding": true, // 打开文件选择合适的文件编码类型打开
+    // ==== 平滑过渡相关 ====
+    "editor.cursorSmoothCaretAnimation": "on",
+    "editor.smoothScrolling": true,
+    "workbench.list.smoothScrolling": true,
+    "terminal.integrated.smoothScrolling": true,
+    // ====================
+    "editor.cursorBlinking": "smooth",
+    "editor.mouseWheelZoom": true, // ctrl + 鼠标滚轮缩放页面
+    "editor.wordWrap": "on", // 显示折行
+    "editor.suggest.snippetsPreventQuickSuggestions": false, // 代码片段也能获取代码补全建议
+    "window.dialogStyle": "custom",
+    "editor.renderLineHighlight": "all",
+    "workbench.colorCustomizations": { // 覆盖主题的颜色设置
+        // 设置光标所在行颜色
+        "editor.lineHighlightBackground": "#3b3c45",
+        "editor.selectionBackground": "#576375",
+        // 括号匹配颜色
+        "editorBracketMatch.border": "#ffffff",
+        "editorBracketMatch.background": "#ffffff",
+        // "editorBracketMatch.foreground":"#ff0000",
+    },
+    // ==== minmap风格 ====
+    "editor.minimap.renderCharacters": false,
+    "editor.minimap.scale": 2,
+    "editor.minimap.maxColumn": 100,
+    "editor.minimap.showSlider":"always",
+    // ====================
+    "workbench.editor.wrapTabs": true,
+}
+```
+
+
+* 随时更新中ing......

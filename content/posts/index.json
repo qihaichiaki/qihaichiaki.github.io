@@ -1,5 +1,19 @@
 ﻿[
     {
+        "title":  "个人PC问题综合",
+        "date":  "2026-06-16",
+        "file":  "2026-06-16-pc-question.md",
+        "summary":  "电脑上的疑难杂症记录",
+        "module":  "杂记"
+    },
+    {
+        "title":  "vscode个人Settings",
+        "date":  "2026-06-16",
+        "file":  "2026-06-16-vscode-settings.md",
+        "summary":  "方便同步的settings.json",
+        "module":  "杂记"
+    },
+    {
         "title":  "VibeCoding学习笔记",
         "date":  "2026-06-05",
         "file":  "2026-06-05-vibecoding.md",
