@@ -1,5 +1,6 @@
 ﻿# vscode个人Settings
 
+### 通用设置
 ```json
 {
     // 自定义设置
@@ -34,6 +35,22 @@
     "editor.minimap.showSlider":"always",
     // ====================
     "workbench.editor.wrapTabs": true,
+}
+```
+
+### .vscode中的settings.json
+clangd配置相关
+```json
+{
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "clangd.path": "D:/ApplicationProgram/vs2022/Community/VC/Tools/Llvm/bin/clangd.exe",
+    "cmake.configureArgs": [
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    ],
+    "clangd.arguments": [
+        "--compile-commands-dir=${workspaceFolder}/build",
+        "--header-insertion=never"
+    ],
 }
 ```
 
