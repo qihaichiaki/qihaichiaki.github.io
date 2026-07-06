@@ -54,5 +54,33 @@ clangd配置相关
 }
 ```
 
+### .vscode中的launch.json
+```
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(msvc)Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [
+                "--gtest_filter=MyTest.*", // gtest相关筛选测试
+                "${cmake.testArgs}"        // ctest相关传递参数
+            ],
+            "cwd": "${workspaceRoot}",
+            "stopAtEntry": false,
+            "console": "externalTerminal",
+            "environment": [
+                {
+                    "name": "PATH",
+                    "value": "${workspaceFolder}/build/bin/NamicaRuntime/${command:cmake.buildType};${env:PATH}"
+                }
+            ]
+        }
+    ]
+}
+```
+
 
 * 随时更新中ing......
