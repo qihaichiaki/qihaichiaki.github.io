@@ -1,21 +1,22 @@
 {
   "version": 1,
   "title": "qihai task board",
-  "updatedAt": "2026-04-24T08:01:31.799Z",
+  "updatedAt": "2026-07-30T10:17:01.025Z",
   "updatedBy": "qihaichiaki",
   "columns": [
     {
       "id": "backlog",
       "title": "待整理",
       "taskIds": [
-        "task-rfuih7ji",
         "task-abbhk9nk"
       ]
     },
     {
       "id": "active",
       "title": "进行中",
-      "taskIds": []
+      "taskIds": [
+        "task-mwv7h5i3"
+      ]
     },
     {
       "id": "done",
@@ -24,7 +25,8 @@
         "task-sx0m71gt",
         "task-khei7hh0",
         "task-92yam3c6",
-        "task-ayn0zv0c"
+        "task-ayn0zv0c",
+        "task-rfuih7ji"
       ]
     }
   ],
@@ -58,9 +60,9 @@
       "tags": [
         "引擎开发"
       ],
-      "columnId": "backlog",
+      "columnId": "done",
       "createdAt": "2026-04-01T15:49:57.222Z",
-      "updatedAt": "2026-04-01T15:50:52.505Z"
+      "updatedAt": "2026-07-30T10:16:06.186Z"
     },
     {
       "id": "task-92yam3c6",
@@ -94,6 +96,17 @@
       "columnId": "done",
       "createdAt": "2026-04-03T01:58:55.030Z",
       "updatedAt": "2026-04-24T08:01:25.724Z"
+    },
+    {
+      "id": "task-mwv7h5i3",
+      "title": "namica测试功能",
+      "description": "* window\n* render",
+      "tags": [
+        "Namica"
+      ],
+      "columnId": "active",
+      "createdAt": "2026-07-30T10:16:14.891Z",
+      "updatedAt": "2026-07-30T10:16:55.196Z"
     }
   ]
 }
