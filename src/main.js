@@ -1,4 +1,4 @@
-﻿import { hero } from "./components/hero.js";
+import { hero } from "./components/hero.js";
 import { siteHeader } from "./components/siteHeader.js";
 import { initNebulaBackground } from "./lib/nebulaBackground.js";
 import { initHeroMagicCircle } from "./lib/magicCircle.js";
@@ -47,7 +47,6 @@ function mountHomeTaskPreviewSection() {
       <div>
         <p class="section-tag">TASK BOARD</p>
         <h2>任务板概览</h2>
-        <p class="tasks-preview-lead">展示仓库中的当前任务板快照；进入任务板页后再做编辑与同步。</p>
       </div>
       <a class="btn btn-sub" href="./tasks.html">打开任务板</a>
     </div>
@@ -421,21 +420,21 @@ const renderTaskPreview = (board) => {
     <div class="tasks-board-columns tasks-board-columns-preview">
       ${normalizedBoard.columns
         .map((column) => {
-          const cards = column.taskIds
+          const visibleTaskIds = column.taskIds.slice(0, 2);
+          const remainingCount = Math.max(0, column.taskIds.length - visibleTaskIds.length);
+          const cards = visibleTaskIds
             .map((taskId) => taskMap.get(taskId))
             .filter(Boolean)
             .map(
               (task) => `
                 <article class="task-card task-card-preview">
                   <h3>${escapeText(task.title)}</h3>
-                  <p>${escapeText(task.description || "暂无任务说明。")}</p>
-                  <div class="task-tags">
-                    ${
-                      task.tags.length
-                        ? task.tags.map((tag) => `<span class="task-chip">${escapeText(tag)}</span>`).join("")
-                        : '<span class="task-chip task-chip-muted">未设置标签</span>'
-                    }
-                  </div>
+                  ${task.description ? `<p>${escapeText(task.description)}</p>` : ""}
+                  ${
+                    task.tags.length
+                      ? `<div class="task-tags">${task.tags.map((tag) => `<span class="task-chip">${escapeText(tag)}</span>`).join("")}</div>`
+                      : ""
+                  }
                 </article>
               `
             )
@@ -451,8 +450,9 @@ const renderTaskPreview = (board) => {
                 <span class="task-column-count">${column.taskIds.length}</span>
               </header>
               <div class="task-column-body">
-                ${cards || '<p class="task-column-empty">当前列还没有任务。</p>'}
+                ${cards || '<p class="task-column-empty">暂无任务</p>'}
               </div>
+              ${remainingCount ? `<a class="task-preview-more" href="./tasks.html">另有 ${remainingCount} 项 <span aria-hidden="true">→</span></a>` : ""}
             </section>
           `;
         })

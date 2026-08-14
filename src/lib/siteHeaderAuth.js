@@ -178,6 +178,14 @@ const bindHeaderInteractions = (getConfig, getSession, setSession, onSessionChan
   const trigger = document.querySelector("#site-user-trigger");
   const dropdown = document.querySelector("#site-user-dropdown");
   const logoutButton = document.querySelector("#site-logout-button");
+  const themeToggle = document.querySelector("#theme-toggle");
+
+  if (themeToggle && themeToggle.dataset.menuBound !== "true") {
+    themeToggle.dataset.menuBound = "true";
+    themeToggle.addEventListener("click", () => {
+      closeDropdown();
+    });
+  }
 
   if (connectButton && connectButton.dataset.bound !== "true") {
     connectButton.dataset.bound = "true";

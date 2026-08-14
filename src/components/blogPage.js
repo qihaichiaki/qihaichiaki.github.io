@@ -1,4 +1,4 @@
-﻿export function blogPage() {
+export function blogPage() {
   return `
     <header class="site-header">
       <a class="brand" href="./index.html#top">qihai</a>
@@ -15,15 +15,16 @@
       <section class="section blog-page-hero reveal">
         <p class="section-tag">BLOG</p>
         <h1 class="blog-page-title">qihai的世界 · 博客</h1>
-        <p class="lead">先浏览目录，再进入文章详情，专注阅读体验。</p>
       </section>
 
       <section class="section reveal blog-reading-zone">
         <div id="blog-catalog-view" class="blog-catalog-view">
           <header class="catalog-head">
-            <p class="section-tag">CATALOG</p>
-            <h2>博客目录</h2>
-            <p class="catalog-lead">按模块浏览文章，点击任意条目进入详情阅读页。</p>
+            <div>
+              <p class="section-tag">CATALOG</p>
+              <h2>文章目录</h2>
+            </div>
+            <p id="blog-catalog-meta" class="catalog-meta">正在读取...</p>
           </header>
           <div id="blog-catalog" class="blog-catalog">
             <p class="loading">正在读取文章目录...</p>

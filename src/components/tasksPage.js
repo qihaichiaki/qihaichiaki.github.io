@@ -1,4 +1,4 @@
-﻿export function tasksPage() {
+export function tasksPage() {
   return `
     <header class="site-header">
       <a class="brand" href="./index.html#top">qihai</a>
@@ -12,19 +12,12 @@
     </header>
 
     <main id="top" class="tasks-page-main">
-      <section class="section tasks-page-hero reveal">
-        <p class="section-tag">TASK BOARD</p>
-        <h1 class="tasks-page-title">qihai的世界 · 任务板</h1>
-        <p class="lead">先在浏览器里整理草稿，确认后再同步到 GitHub 仓库，写作感和管理感会更稳一些。</p>
-      </section>
-
-      <section class="section reveal tasks-board-zone">
+      <section class="reveal tasks-workspace">
         <div class="tasks-shell">
           <header class="tasks-shell-head">
             <div class="tasks-shell-copy">
-              <p class="section-tag">SYNC</p>
-              <h2>草稿、本地任务板与仓库同步分开处理</h2>
-              <p id="tasks-mode-copy" class="tasks-mode-copy">正在检查任务板状态...</p>
+              <p class="section-tag">TASK BOARD</p>
+              <h1 class="tasks-page-title">任务板</h1>
             </div>
 
             <div class="tasks-shell-actions">
@@ -39,7 +32,7 @@
             </div>
           </header>
 
-          <div id="tasks-alert" class="tasks-alert loading">正在读取任务板...</div>
+          <div id="tasks-alert" class="tasks-alert loading" role="status" aria-live="polite">正在读取任务板...</div>
           <div id="tasks-board-meta" class="tasks-board-meta"></div>
           <div id="tasks-board-columns" class="tasks-board-columns">
             <p class="loading">正在准备任务卡片...</p>

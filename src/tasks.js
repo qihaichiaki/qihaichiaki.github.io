@@ -1,4 +1,4 @@
-﻿import { tasksPage } from "./components/tasksPage.js";
+import { tasksPage } from "./components/tasksPage.js";
 import { siteHeader } from "./components/siteHeader.js";
 import { initNebulaBackground } from "./lib/nebulaBackground.js";
 import { initSiteHeaderAuth } from "./lib/siteHeaderAuth.js";
@@ -92,6 +92,18 @@ const formatDateTime = (iso) => {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit"
+  });
+};
+
+const formatTaskDate = (iso) => {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return date.toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
   });
 };
 
@@ -225,12 +237,12 @@ const getDropIndex = (body, taskId) => {
   }
 
   let index = 0;
-  Array.from(body.children).forEach((child) => {
-    if (child === placeholder) return;
+  for (const child of Array.from(body.children)) {
+    if (child === placeholder) break;
     if (child instanceof HTMLElement && child.matches('.task-card[data-applied="true"]') && child.dataset.taskId !== taskId) {
       index += 1;
     }
-  });
+  }
 
   return index;
 };
@@ -282,7 +294,7 @@ const openTaskEditor = async (taskId) => {
   await persistState();
   renderTopBar();
   renderBoard();
-  setSyncState("draft", "卡片已进入编辑状态。修改完成后点 ✔ 应用，再决定是否同步到 GitHub。");
+  setSyncState("draft", "正在编辑；应用后可拖拽或同步。");
 };
 
 const discardTaskDraft = async (taskId) => {
@@ -438,7 +450,7 @@ const createDraftTask = async (columnId) => {
   await persistState();
   renderTopBar();
   renderBoard();
-  setSyncState("draft", "新卡片已创建。填写内容后点 ✔ 应用，它才会进入可拖拽和待同步状态。");
+  setSyncState("draft", "新任务尚未应用。");
 };
 
 const moveAppliedTask = async (taskId, targetColumnId, targetIndex) => {
@@ -461,6 +473,46 @@ const moveAppliedTask = async (taskId, targetColumnId, targetIndex) => {
   } else {
     setSyncState("local", "卡片顺序已调整，并保存在本地任务板中。");
   }
+};
+
+const focusTaskDragHandle = (taskId) => {
+  window.requestAnimationFrame(() => {
+    const card = Array.from(document.querySelectorAll(".task-card")).find((item) => item.dataset.taskId === taskId);
+    card?.querySelector(".task-drag-handle")?.focus();
+  });
+};
+
+const moveAppliedTaskByKeyboard = async (taskId, key) => {
+  if (!canDragTask(taskId)) return;
+
+  const columnIndex = state.board.columns.findIndex((column) => column.taskIds.includes(taskId));
+  if (columnIndex === -1) return;
+
+  const column = state.board.columns[columnIndex];
+  const taskIndex = column.taskIds.indexOf(taskId);
+  let targetColumn = column;
+  let targetIndex = taskIndex;
+
+  if (key === "ArrowUp") {
+    if (taskIndex === 0) return;
+    targetIndex = taskIndex - 1;
+  } else if (key === "ArrowDown") {
+    if (taskIndex === column.taskIds.length - 1) return;
+    targetIndex = taskIndex + 1;
+  } else if (key === "ArrowLeft") {
+    if (columnIndex === 0) return;
+    targetColumn = state.board.columns[columnIndex - 1];
+    targetIndex = Math.min(taskIndex, targetColumn.taskIds.length);
+  } else if (key === "ArrowRight") {
+    if (columnIndex === state.board.columns.length - 1) return;
+    targetColumn = state.board.columns[columnIndex + 1];
+    targetIndex = Math.min(taskIndex, targetColumn.taskIds.length);
+  } else {
+    return;
+  }
+
+  await moveAppliedTask(taskId, targetColumn.id, targetIndex);
+  focusTaskDragHandle(taskId);
 };
 
 const discardLocalChanges = async () => {
@@ -520,7 +572,7 @@ async function handleHeaderSessionChange(session) {
   renderBoard();
 
   if (!hasRemoteApi(state.config)) {
-    setSyncState("local", "当前未配置 Worker 地址，任务板只保存在浏览器本地。");
+    setSyncState("local", "任务板仅保存在当前浏览器。");
     return;
   }
 
@@ -541,7 +593,6 @@ async function handleHeaderSessionChange(session) {
 }
 
 const renderTopBar = () => {
-  const modeCopy = document.querySelector("#tasks-mode-copy");
   const modeBadge = document.querySelector("#task-mode-badge");
   const syncBadge = document.querySelector("#task-sync-badge");
   const alert = document.querySelector("#tasks-alert");
@@ -549,7 +600,7 @@ const renderTopBar = () => {
   const syncButton = document.querySelector("#task-sync-button");
   const discardButton = document.querySelector("#task-discard-button");
 
-  if (!modeCopy || !modeBadge || !syncBadge || !alert || !meta || !syncButton || !discardButton) {
+  if (!modeBadge || !syncBadge || !alert || !meta || !syncButton || !discardButton) {
     return;
   }
 
@@ -570,18 +621,13 @@ const renderTopBar = () => {
   };
 
   if (!hasRemoteApi(state.config)) {
-    modeCopy.textContent = "当前没有配置远端 API。你可以先编辑卡片、应用、拖拽排序，所有内容仅保存在本地浏览器。";
     modeBadge.textContent = "本地模式";
     modeBadge.className = "task-pill task-pill-local";
   } else if (state.session.canEdit) {
-    modeCopy.textContent = `已登录 ${state.session.login || "qihaichiaki"}。卡片先编辑并单独应用，进入任务板后再手动同步到 GitHub。`;
     modeBadge.textContent = "可编辑";
     modeBadge.className = "task-pill task-pill-live";
   } else {
-    modeCopy.textContent = state.session.authenticated
-      ? "当前登录账号没有任务板写权限。任务板会保持只读展示。"
-      : "当前是只读浏览模式。请在右上角菜单中连接 GitHub，之后才允许把任务板写回仓库。";
-    modeBadge.textContent = state.session.authenticated ? "权限不足" : "只读访客";
+    modeBadge.textContent = state.session.authenticated ? "权限不足" : "访客";
     modeBadge.className = "task-pill task-pill-readonly";
   }
 
@@ -591,13 +637,17 @@ const renderTopBar = () => {
   alert.className = `tasks-alert tasks-alert-${state.syncStatus}`;
   alert.textContent = state.syncMessage;
 
-  meta.innerHTML = `
-    <span>任务数 ${totalTasks}</span>
-    <span>未应用卡片 ${state.dirtyTaskIds.size}</span>
-    <span>最近同步 ${formatDateTime(state.lastSyncedAt)}</span>
-    <span>待同步 ${state.pendingSync ? "是" : "否"}</span>
-    <span>SHA ${escapeText(state.baseSha ? state.baseSha.slice(0, 7) : "local")}</span>
-  `;
+  const metaItems = [
+    `<span><strong>${totalTasks}</strong> 个任务</span>`,
+    `<span>最近同步 ${formatDateTime(state.lastSyncedAt)}</span>`
+  ];
+  if (state.dirtyTaskIds.size) {
+    metaItems.push(`<span class="tasks-meta-attention">${state.dirtyTaskIds.size} 个未应用</span>`);
+  }
+  if (state.pendingSync) {
+    metaItems.push('<span class="tasks-meta-attention">待同步</span>');
+  }
+  meta.innerHTML = metaItems.join("");
 
   syncButton.classList.toggle("is-hidden", !(canSync() && (state.pendingSync || state.syncInFlight)));
   syncButton.disabled = state.syncInFlight || !state.online || state.hasDraft || !state.pendingSync;
@@ -637,22 +687,22 @@ const renderBoard = () => {
           const headActions = editing
             ? `
                 <div class="task-card-tools task-card-tools-editing">
-                  <button class="task-card-icon task-card-icon-apply" type="button" data-action="apply-task" title="应用卡片">✔</button>
-                  <button class="task-card-icon task-card-icon-close" type="button" data-action="close-task-editor" title="退出编辑">x</button>
-                  <button class="task-card-icon task-card-icon-delete" type="button" data-action="delete-task" title="删除卡片">🗑</button>
+                  <button class="task-card-icon task-card-icon-apply" type="button" data-action="apply-task" title="应用任务" aria-label="应用任务">✓</button>
+                  <button class="task-card-icon task-card-icon-close" type="button" data-action="close-task-editor" title="取消编辑" aria-label="取消编辑">×</button>
+                  <button class="task-card-icon task-card-icon-delete" type="button" data-action="delete-task" title="删除任务" aria-label="删除任务">⌫</button>
                 </div>
               `
             : `
                 <div class="task-card-tools">
-                  ${editable ? '<button class="task-card-icon task-card-icon-edit" type="button" data-action="edit-task" title="再次编辑">✎</button>' : ""}
-                  ${draggable ? '<span class="task-drag-handle" draggable="true" title="拖拽排序或跨列移动">⋮⋮</span>' : ""}
+                  ${editable ? '<button class="task-card-icon task-card-icon-edit" type="button" data-action="edit-task" title="编辑任务" aria-label="编辑任务">✎</button>' : ""}
+                  ${draggable ? '<span class="task-drag-handle" draggable="true" role="button" tabindex="0" aria-label="移动任务；可拖拽或使用方向键" title="拖拽或使用方向键移动">⋮⋮</span>' : ""}
                 </div>
               `;
 
           return `
             <article class="task-card${dirty ? " is-dirty" : ""}${editing ? " is-editing" : ""}" data-task-id="${escapeText(task.id)}" data-applied="${applied ? "true" : "false"}" data-column-id="${escapeText(column.id)}">
               <div class="task-card-head">
-                <span class="task-card-date">${formatDateTime(task.updatedAt)}</span>
+                <time class="task-card-date" datetime="${escapeText(task.updatedAt)}">${formatTaskDate(task.updatedAt)}</time>
                 ${headActions}
               </div>
               ${
@@ -664,14 +714,12 @@ const renderBoard = () => {
                   `
                   : `
                     <h3>${escapeText(task.title)}</h3>
-                    <p>${escapeText(task.description || "暂无任务说明。")}</p>
-                    <div class="task-tags">
-                      ${
-                        task.tags.length
-                          ? task.tags.map((tag) => `<span class="task-chip">${escapeText(tag)}</span>`).join("")
-                          : '<span class="task-chip task-chip-muted">未设置标签</span>'
-                      }
-                    </div>
+                    ${task.description ? `<p>${escapeText(task.description)}</p>` : ""}
+                    ${
+                      task.tags.length
+                        ? `<div class="task-tags">${task.tags.map((tag) => `<span class="task-chip">${escapeText(tag)}</span>`).join("")}</div>`
+                        : ""
+                    }
                   `
               }
             </article>
@@ -689,9 +737,9 @@ const renderBoard = () => {
             <span class="task-column-count">${column.taskIds.length}</span>
           </header>
           <div class="task-column-body" data-column-id="${escapeText(column.id)}">
-            ${cards || '<p class="task-column-empty">拖进一张卡片，或者先创建一个新的任务。</p>'}
+            ${cards || '<p class="task-column-empty">暂无任务</p>'}
           </div>
-          ${editable ? `<button class="btn btn-sub task-add-btn" type="button" data-column-id="${escapeText(column.id)}">新增任务</button>` : ""}
+          ${editable ? `<button class="btn btn-sub task-add-btn" type="button" data-column-id="${escapeText(column.id)}">+ 新增任务</button>` : ""}
         </section>
       `;
     })
@@ -788,31 +836,31 @@ const bootstrapBoard = async () => {
   renderBoard();
 
   if (!hasRemoteApi(state.config)) {
-    setSyncState("local", "当前未配置 Worker 地址，任务板只保存在浏览器本地。");
+    setSyncState("local", "任务板仅保存在当前浏览器。");
     return;
   }
 
   if (remoteBoardError) {
-    setSyncState("error", `远端任务板读取失败：${String(remoteBoardError?.message || "网络异常")}`);
+    setSyncState("error", "远端同步暂不可用，当前显示仓库快照。");
     return;
   }
 
   if (state.hasDraft) {
-    setSyncState("draft", "检测到未应用的卡片草稿。请先在卡片上点 ✔ 应用。");
+    setSyncState("draft", "有任务尚未应用。");
     return;
   }
 
   if (state.pendingSync && canSync()) {
-    setSyncState("pending", "当前有已应用但未同步到 GitHub 的任务板修改。");
+    setSyncState("pending", "有修改等待同步到 GitHub。");
     return;
   }
 
   if (state.session.canEdit) {
-    setSyncState("saved", "当前任务板已经连接远端。已应用的卡片可以拖拽，最终再手动同步到 GitHub。");
+    setSyncState("saved", "已连接 GitHub，任务板为最新版本。");
     return;
   }
 
-  setSyncState("readonly", "当前是只读浏览模式。请在右上角菜单中连接 GitHub，之后才允许同步到仓库。");
+  setSyncState("readonly", "连接 GitHub 后可编辑并同步任务板。");
 };
 
 const handleTaskFieldInput = async (element) => {
@@ -874,6 +922,18 @@ const bindInteractions = () => {
       const target = event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement ? event.target : null;
       if (!target || !target.dataset.field) return;
       handleTaskFieldInput(target);
+    });
+
+    boardRoot.addEventListener("keydown", async (event) => {
+      const handle = event.target instanceof HTMLElement ? event.target.closest(".task-drag-handle") : null;
+      if (!(handle instanceof HTMLElement) || !["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
+        return;
+      }
+
+      const taskId = handle.closest(".task-card")?.dataset.taskId;
+      if (!taskId) return;
+      event.preventDefault();
+      await moveAppliedTaskByKeyboard(taskId, event.key);
     });
 
     boardRoot.addEventListener("dragstart", (event) => {

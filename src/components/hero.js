@@ -1,4 +1,4 @@
-﻿export function hero() {
+export function hero() {
   return `
     <header class="site-header">
       <a class="brand" href="#top">qihai</a>
@@ -18,13 +18,10 @@
           <div class="hero-copy">
             <p class="kicker">QIHAI PERSONAL SITE</p>
             <h1>qihai的世界</h1>
-            <p class="lead">
-              以简洁排版呈现近期代码参与、收藏偏好与写作节奏。
-            </p>
+            <p class="lead">代码、笔记与进行中的事。</p>
             <div class="hero-actions">
-              <a class="btn btn-main" href="#works">查看近期提交</a>
-              <a class="btn btn-sub" href="./tasks.html">进入任务板</a>
-              <a class="btn btn-sub" href="./blog.html">进入博客页</a>
+              <a class="btn btn-main" href="#works">近期代码</a>
+              <a class="btn btn-sub" href="./tasks.html">打开任务板</a>
             </div>
           </div>
           <div class="hero-magic" aria-hidden="true">
@@ -169,8 +166,8 @@
 
       <section id="contact" class="section cta reveal">
         <p class="section-tag">CONTACT</p>
-        <h2>如果你也喜欢清爽有节奏的网页，我们可以聊聊。</h2>
-        <a class="btn btn-main" href="https://github.com/qihaichiaki" target="_blank" rel="noreferrer">GitHub</a>
+        <h2>更多代码与项目</h2>
+        <a class="btn btn-main" href="https://github.com/qihaichiaki" target="_blank" rel="noreferrer">前往 GitHub</a>
       </section>
     </main>
   `;

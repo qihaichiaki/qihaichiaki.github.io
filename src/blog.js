@@ -1,4 +1,4 @@
-﻿import { blogPage } from "./components/blogPage.js";
+import { blogPage } from "./components/blogPage.js";
 import { siteHeader } from "./components/siteHeader.js";
 import { parseMarkdown } from "./lib/markdown.js";
 import { initNebulaBackground } from "./lib/nebulaBackground.js";
@@ -176,7 +176,6 @@ const renderPostMeta = (post, minutes) => {
     <div class="meta-row">
       <span>${escapeText(post.date)}</span>
       <span>${minutes} 分钟阅读</span>
-      <span>${escapeText(post.file)}</span>
     </div>
     ${post.summary ? `<p class="meta-summary">${escapeText(post.summary)}</p>` : ""}
   `;
@@ -268,14 +267,21 @@ const markCatalogActive = () => {
 
 const renderCatalog = () => {
   const root = document.querySelector("#blog-catalog");
+  const meta = document.querySelector("#blog-catalog-meta");
   if (!root) return;
 
   if (!state.posts.length) {
     root.innerHTML = '<p class="empty">暂无文章，请先新增 md 文件。</p>';
+    if (meta) meta.textContent = "0 篇";
     return;
   }
 
-  root.innerHTML = groupPostsByModule(state.posts)
+  const groupedPosts = groupPostsByModule(state.posts);
+  if (meta) {
+    meta.textContent = `${state.posts.length} 篇 · ${groupedPosts.length} 个分类`;
+  }
+
+  root.innerHTML = groupedPosts
     .map(
       ([module, posts]) => `
       <section class="catalog-module">
@@ -288,9 +294,12 @@ const renderCatalog = () => {
             .map(
               (post) => `
               <button class="catalog-post-btn ${post.file === state.activeFile ? "is-active" : ""}" data-file="${escapeText(post.file)}" type="button">
-                <strong>${escapeText(post.title)}</strong>
-                <span>${escapeText(post.date)}</span>
-                <em>${escapeText(post.summary || "")}</em>
+                <span class="catalog-post-main">
+                  <strong>${escapeText(post.title)}</strong>
+                  ${post.summary ? `<em>${escapeText(post.summary)}</em>` : ""}
+                </span>
+                <time datetime="${escapeText(post.date)}">${escapeText(post.date)}</time>
+                <span class="catalog-post-arrow" aria-hidden="true">↗</span>
               </button>
             `
             )
