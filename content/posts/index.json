@@ -1,74 +1,74 @@
-﻿[
-    {
-        "title":  "编码规范",
-        "createdAt":  "2026-06-19T17:53:50.000Z",
-        "updatedAt":  "2026-06-19T17:53:50.000Z",
-        "file":  "2026-06-20-coding-standards.md",
-        "summary":  "",
-        "module":  "杂记"
-    },
-    {
-        "title":  "个人PC问题综合",
-        "createdAt":  "2026-06-16T05:56:03.000Z",
-        "updatedAt":  "2026-06-19T17:53:50.000Z",
-        "file":  "2026-06-16-pc-question.md",
-        "summary":  "电脑上的疑难杂症记录",
-        "module":  "杂记"
-    },
-    {
-        "title":  "vscode个人Settings",
-        "createdAt":  "2026-06-16T05:56:03.000Z",
-        "updatedAt":  "2026-07-06T03:10:33.000Z",
-        "file":  "2026-06-16-vscode-settings.md",
-        "summary":  "方便同步的settings.json",
-        "module":  "杂记"
-    },
-    {
-        "title":  "VibeCoding学习笔记",
-        "createdAt":  "2026-06-05T06:32:04.000Z",
-        "updatedAt":  "2026-06-05T06:32:04.000Z",
-        "file":  "2026-06-05-vibecoding.md",
-        "summary":  "俺寻思的coding开山之作",
-        "module":  "AI"
-    },
-    {
-        "title":  "C++ 进阶笔记（01Notes）",
-        "createdAt":  "2026-03-30T03:28:42.000Z",
-        "updatedAt":  "2026-03-30T03:28:42.000Z",
-        "file":  "2026-03-30-cpp-notes.md",
-        "summary":  "编译链接、模板、移动语义、性能与工程实践整理。",
-        "module":  "C++"
-    },
-    {
-        "title":  "Git 命令代码整理（01Notes）",
-        "createdAt":  "2026-03-30T03:28:42.000Z",
-        "updatedAt":  "2026-06-05T06:32:04.000Z",
-        "file":  "2026-03-30-git-notes.md",
-        "summary":  "常用 git 命令、分支管理、远程协作与故障处理速查。",
-        "module":  "Git"
-    },
-    {
-        "title":  "站点重构日志：蓝发基调版本",
-        "createdAt":  "2026-03-30T02:56:06.000Z",
-        "updatedAt":  "2026-03-30T02:56:06.000Z",
-        "file":  "2026-03-30-site-refresh.md",
-        "summary":  "记录从展示页改造成动态模块首页的过程。",
-        "module":  "杂记"
-    },
-    {
-        "title":  "GitHub 模块接入笔记",
-        "createdAt":  "2026-03-30T02:56:06.000Z",
-        "updatedAt":  "2026-03-30T02:56:06.000Z",
-        "file":  "2026-03-30-github-module.md",
-        "summary":  "近期提交仓库与最近 Star 的数据策略。",
-        "module":  "Git"
-    },
-    {
-        "title":  "本地 Markdown 博客工作流",
-        "createdAt":  "2026-03-30T02:56:06.000Z",
-        "updatedAt":  "2026-03-30T02:56:06.000Z",
-        "file":  "2026-03-30-md-workflow.md",
-        "summary":  "如何在本地上传 md 文件并立即展示到网页。",
-        "module":  "杂记"
-    }
+[
+  {
+    "title": "编码规范",
+    "createdAt": "2026-06-19T17:53:50.000Z",
+    "updatedAt": "2026-06-19T17:53:50.000Z",
+    "file": "2026-06-20-coding-standards.md",
+    "summary": "",
+    "module": "杂记"
+  },
+  {
+    "title": "个人PC问题综合",
+    "createdAt": "2026-06-16T05:56:03.000Z",
+    "updatedAt": "2026-06-19T17:53:50.000Z",
+    "file": "2026-06-16-pc-question.md",
+    "summary": "电脑上的疑难杂症记录",
+    "module": "杂记"
+  },
+  {
+    "title": "vscode个人Settings",
+    "createdAt": "2026-06-16T05:56:03.000Z",
+    "updatedAt": "2026-07-06T03:10:33.000Z",
+    "file": "2026-06-16-vscode-settings.md",
+    "summary": "方便同步的settings.json",
+    "module": "杂记"
+  },
+  {
+    "title": "VibeCoding学习笔记",
+    "createdAt": "2026-06-05T06:32:04.000Z",
+    "updatedAt": "2026-06-05T06:32:04.000Z",
+    "file": "2026-06-05-vibecoding.md",
+    "summary": "俺寻思的coding开山之作",
+    "module": "AI"
+  },
+  {
+    "title": "C++ 进阶笔记（01Notes）",
+    "createdAt": "2026-03-30T03:28:42.000Z",
+    "updatedAt": "2026-03-30T03:28:42.000Z",
+    "file": "2026-03-30-cpp-notes.md",
+    "summary": "编译链接、模板、移动语义、性能与工程实践整理。",
+    "module": "C++"
+  },
+  {
+    "title": "Git 命令代码整理（01Notes）",
+    "createdAt": "2026-03-30T03:28:42.000Z",
+    "updatedAt": "2026-06-05T06:32:04.000Z",
+    "file": "2026-03-30-git-notes.md",
+    "summary": "常用 git 命令、分支管理、远程协作与故障处理速查。",
+    "module": "Git"
+  },
+  {
+    "title": "本地 Markdown 博客工作流",
+    "createdAt": "2026-03-30T02:56:06.000Z",
+    "updatedAt": "2026-03-30T02:56:06.000Z",
+    "file": "2026-03-30-md-workflow.md",
+    "summary": "如何在本地上传 md 文件并立即展示到网页。",
+    "module": "杂记"
+  },
+  {
+    "title": "站点重构日志：蓝发基调版本",
+    "createdAt": "2026-03-30T02:56:06.000Z",
+    "updatedAt": "2026-08-14T10:35:03.738Z",
+    "file": "2026-03-30-site-refresh.md",
+    "summary": "记录从展示页改造成动态模块首页的过程。",
+    "module": "杂记"
+  },
+  {
+    "title": "GitHub 模块接入笔记",
+    "createdAt": "2026-03-30T02:56:06.000Z",
+    "updatedAt": "2026-03-30T02:56:06.000Z",
+    "file": "2026-03-30-github-module.md",
+    "summary": "近期提交仓库与最近 Star 的数据策略。",
+    "module": "Git"
+  }
 ]
