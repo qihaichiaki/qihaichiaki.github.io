@@ -39,6 +39,7 @@ if ([string]::IsNullOrWhiteSpace($Slug)) {
 }
 
 $date = Get-Date -Format "yyyy-MM-dd"
+$timestamp = (Get-Date).ToUniversalTime().ToString("o")
 $fileName = "$date-$Slug.md"
 $filePath = Join-Path $postsDir $fileName
 
@@ -79,7 +80,8 @@ if ($raw.Trim()) {
 
 $newPost = [PSCustomObject]@{
   title = $Title
-  date = $date
+  createdAt = $timestamp
+  updatedAt = $timestamp
   file = $fileName
   summary = $Summary
   module = $Module

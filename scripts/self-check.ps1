@@ -30,6 +30,8 @@ $required = @(
   "src/components/tasksPage.js",
   "src/styles/main.css",
   "src/lib/markdown.js",
+  "src/lib/postDraftsStore.js",
+  "src/lib/postsApi.js",
   "src/lib/siteConfig.js",
   "src/lib/tasksApi.js",
   "src/lib/tasksModel.js",
@@ -51,6 +53,11 @@ foreach ($file in $required) {
 $posts = Get-Content -Raw "content/posts/index.json" | ConvertFrom-Json
 foreach ($post in $posts) {
   Assert-True ($post.file -ne $null -and $post.file -ne "") "文章索引中存在空 file 字段"
+  Assert-True ($post.createdAt -ne $null -and $post.createdAt -ne "") ("文章缺少 createdAt: " + $post.file)
+  Assert-True ($post.updatedAt -ne $null -and $post.updatedAt -ne "") ("文章缺少 updatedAt: " + $post.file)
+  $parsedTimestamp = [DateTimeOffset]::MinValue
+  Assert-True ([DateTimeOffset]::TryParse([string]$post.createdAt, [ref]$parsedTimestamp)) ("createdAt 格式错误: " + $post.file)
+  Assert-True ([DateTimeOffset]::TryParse([string]$post.updatedAt, [ref]$parsedTimestamp)) ("updatedAt 格式错误: " + $post.file)
   Assert-True (Test-Path ("content/posts/" + $post.file)) ("索引引用的 md 不存在: " + $post.file)
 }
 
@@ -72,6 +79,9 @@ node --check "src/tasks.js" | Out-Null
 node --check "src/components/hero.js" | Out-Null
 node --check "src/components/blogPage.js" | Out-Null
 node --check "src/components/tasksPage.js" | Out-Null
+node --check "src/lib/markdown.js" | Out-Null
+node --check "src/lib/postDraftsStore.js" | Out-Null
+node --check "src/lib/postsApi.js" | Out-Null
 node --check "src/lib/siteConfig.js" | Out-Null
 node --check "src/lib/tasksApi.js" | Out-Null
 node --check "src/lib/tasksModel.js" | Out-Null
@@ -101,6 +111,8 @@ try {
   $cssResp = Invoke-WebRequest -Uri "$base/src/styles/main.css" -UseBasicParsing
   $mainResp = Invoke-WebRequest -Uri "$base/src/main.js" -UseBasicParsing
   $blogJsResp = Invoke-WebRequest -Uri "$base/src/blog.js" -UseBasicParsing
+  $postsApiResp = Invoke-WebRequest -Uri "$base/src/lib/postsApi.js" -UseBasicParsing
+  $draftStoreResp = Invoke-WebRequest -Uri "$base/src/lib/postDraftsStore.js" -UseBasicParsing
   $tasksJsResp = Invoke-WebRequest -Uri "$base/src/tasks.js" -UseBasicParsing
   $configResp = Invoke-WebRequest -Uri "$base/content/site-config.json" -UseBasicParsing
   $boardResp = Invoke-WebRequest -Uri "$base/content/tasks/board.json" -UseBasicParsing
@@ -111,6 +123,8 @@ try {
   Assert-True ($cssResp.StatusCode -eq 200) "main.css 访问失败"
   Assert-True ($mainResp.StatusCode -eq 200) "main.js 访问失败"
   Assert-True ($blogJsResp.StatusCode -eq 200) "blog.js 访问失败"
+  Assert-True ($postsApiResp.StatusCode -eq 200) "postsApi.js 访问失败"
+  Assert-True ($draftStoreResp.StatusCode -eq 200) "postDraftsStore.js 访问失败"
   Assert-True ($tasksJsResp.StatusCode -eq 200) "tasks.js 访问失败"
   Assert-True ($configResp.StatusCode -eq 200) "site-config.json 访问失败"
   Assert-True ($boardResp.StatusCode -eq 200) "board.json 访问失败"
@@ -119,8 +133,13 @@ try {
   Assert-True ($blogResp.Content -match '<div id="app"></div>') "blog.html 页面骨架异常"
   Assert-True ($tasksResp.Content -match '<div id="app"></div>') "tasks.html 页面骨架异常"
   Assert-True ($cssResp.Content -match "site-header") "CSS 关键样式未找到"
+  Assert-True ($cssResp.Content -match "post-image-list") "CSS 图片编辑样式未找到"
   Assert-True ($mainResp.Content -match "loadRecentCommits") "main.js 关键逻辑未找到"
   Assert-True ($blogJsResp.Content -match "loadBlogPage") "blog.js 关键逻辑未找到"
+  Assert-True ($blogJsResp.Content -match "handlePostImageSelection") "blog.js 图片编辑逻辑未找到"
+  Assert-True ($postsApiResp.Content -match "pushRemotePost") "postsApi.js 关键逻辑未找到"
+  Assert-True ($postsApiResp.Content -match "POSTS_API_VERSION_MISMATCH") "postsApi.js 接口版本校验未找到"
+  Assert-True ($draftStoreResp.Content -match "savePostDraft") "postDraftsStore.js 关键逻辑未找到"
   Assert-True ($tasksJsResp.Content -match "bootstrapBoard") "tasks.js 关键逻辑未找到"
   Assert-True ($configResp.Content -match "apiBaseUrl") "site-config.json 结构异常"
   Assert-True ($boardResp.Content -match "columns") "board.json 结构异常"

@@ -9,9 +9,10 @@
   - 最近 Star 的三个仓库
   - 最近添加的三篇博客预览
 - 博客页（`blog.html`）
-  - 模块筛选（如 C++ / Git / 杂记）
-  - 目录可折叠，阅读时自动回收
-  - Markdown 文章完整阅读与切换
+  - 按分类展示文章索引
+  - 文章目录、阅读进度与快捷导航
+  - Markdown 文章完整阅读与实时预览编辑
+  - GitHub 登录后同步正文、分类和描述
 - 任务板页（`tasks.html`）
   - 本地 `IndexedDB` 草稿保存
   - 预留 GitHub 登录与仓库同步状态
@@ -35,7 +36,8 @@
 ```json
 {
   "title": "文章标题",
-  "date": "2026-03-30",
+  "createdAt": "2026-03-30T00:00:00.000Z",
+  "updatedAt": "2026-03-30T00:00:00.000Z",
   "file": "your-post.md",
   "summary": "一句摘要",
   "module": "C++"
@@ -58,6 +60,25 @@ powershell -ExecutionPolicy Bypass -File .\scripts\new-post.ps1 -Title "我的�
 - `-Slug`：自定义文件名后缀（默认从标题生成）
 - `-Module`：文章模块（默认 `杂记`）
 - `-Open`：创建后自动打开 md 文件
+
+## 网页博客编辑
+
+部署 Worker 并连接 GitHub 后，允许的账号可在博客目录中新建文章，也可在阅读页编辑当前文章。编辑器支持：
+
+- 标题、分类和描述；文件名由服务端生成，时间只读展示
+- Markdown 正文与实时预览
+- PNG、JPEG、GIF、WebP 图片插入、预览、移除与仓库文件删除
+- IndexedDB 本地草稿箱、自动保存、恢复和删除
+- 正文、图片与 `content/posts/index.json` 单次 commit 同步
+- SHA 冲突检测，避免覆盖远端的新版本
+
+草稿只保存在当前浏览器中，不会产生 GitHub commit。点击“同步到 GitHub”成功发布后，对应草稿会自动删除。
+
+新文章首次同步时由 Worker 生成 Markdown 文件名与 `createdAt` / `updatedAt`；再次编辑只更新 `updatedAt`，并保持原文件名及 `createdAt` 不变。旧索引中的 `date` 字段仍可兼容读取。
+
+编辑器插入的图片自动保存到 `content/posts/assets/`，无需手动设置文件名。移除已同步的编辑器图片后，对应资源会在下次同步时从仓库删除；外部图片只移除正文引用。
+
+GitHub App 需要具备仓库 `Contents: Read and write` 权限。Worker 的博客接口为 `GET /api/posts` 与 `PUT /api/posts`。
 
 ## 本地自检
 

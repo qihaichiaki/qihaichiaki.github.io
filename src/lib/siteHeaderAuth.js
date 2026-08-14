@@ -163,7 +163,7 @@ const syncHeaderAuthUi = (config, session) => {
   if (userHint) {
     if (authenticated) {
       userHint.textContent = editable
-        ? "当前已连接 GitHub，可在任务板页继续编辑并手动同步。"
+        ? "当前已连接 GitHub，可编辑任务与博客并同步到仓库。"
         : "当前账号只有浏览权限；如需写入仓库，请切换到有权限的 GitHub 账号。";
     } else if (remoteEnabled) {
       userHint.textContent = "可连接 GitHub，也可仅浏览当前页面并切换主题。";

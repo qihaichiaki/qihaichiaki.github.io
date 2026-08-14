@@ -393,15 +393,19 @@ const loadRecentPosts = async () => {
 
     root.innerHTML = latest
       .map(
-        (post, idx) => `
+        (post, idx) => {
+          const postTime = post.updatedAt || post.createdAt || post.date || "";
+          const postSummary = String(post.summary || "").trim();
+          return `
         <a class="repo-item" href="./blog.html?post=${encodeURIComponent(post.file)}">
           <span class="repo-index">${String(idx + 1).padStart(2, "0")}</span>
           <div class="repo-main">
-            <strong>${post.title}</strong>
-            <p><span class="post-module-tag">${post.module || "杂记"}</span> ${post.date} · ${post.summary || ""}</p>
+            <strong>${escapeText(post.title)}</strong>
+            <p><span class="post-module-tag">${escapeText(post.module || "杂记")}</span> ${escapeText(formatDate(postTime))}${postSummary ? ` · ${escapeText(postSummary)}` : ""}</p>
           </div>
         </a>
-      `
+      `;
+        }
       )
       .join("");
   } catch {

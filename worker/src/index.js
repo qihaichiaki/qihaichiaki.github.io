@@ -1,7 +1,7 @@
 import rs from "jsrsasign";
 
 const SESSION_COOKIE = "__Host-qihai-task-session";
-const GITHUB_USER_AGENT = "qihai-task-board-api/1.0 (+https://qihaichiaki.github.io)";
+const GITHUB_USER_AGENT = "qihai-site-api/1.0 (+https://qihaichiaki.github.io)";
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://qihaichiaki.github.io",
   "http://127.0.0.1:4173",
@@ -10,6 +10,10 @@ const DEFAULT_ALLOWED_ORIGINS = [
 const DEFAULT_RETURN_PATH = "/tasks.html";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
 const STATE_TTL_SECONDS = 60 * 10;
+const MAX_POST_CONTENT_LENGTH = 500_000;
+const MAX_POST_IMAGE_COUNT = 12;
+const MAX_POST_IMAGE_SIZE = 6 * 1024 * 1024;
+const MAX_POST_IMAGE_TOTAL_SIZE = 20 * 1024 * 1024;
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -343,6 +347,465 @@ const getInstallationToken = async (env) => {
   return tokenData.token;
 };
 
+const decodeGitHubContent = (data) => decoder.decode(base64Decode(String(data?.content || "").replaceAll("\n", "")));
+
+const getRepoFile = async (env, installationToken, path, ref = "") => {
+  try {
+    const url = new URL(`https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${toGitHubPath(path)}`);
+    if (ref) {
+      url.searchParams.set("ref", ref);
+    }
+    const response = await githubRequest(
+      url.toString(),
+      {
+        headers: {
+          Authorization: `token ${installationToken}`
+        }
+      }
+    );
+    const data = await response.json();
+    return {
+      path,
+      sha: String(data.sha || ""),
+      content: decodeGitHubContent(data)
+    };
+  } catch (error) {
+    if (error?.status === 404) return null;
+    throw error;
+  }
+};
+
+const getPostsIndexPath = (env) => String(env.GITHUB_POSTS_INDEX_PATH || "content/posts/index.json").trim();
+
+const getPostsDirectory = (env) => {
+  const indexPath = getPostsIndexPath(env);
+  const slash = indexPath.lastIndexOf("/");
+  return slash >= 0 ? indexPath.slice(0, slash) : "content/posts";
+};
+
+const isValidPostFile = (value) => /^[a-z0-9][a-z0-9._-]*\.md$/i.test(String(value || ""));
+const isValidPostImagePath = (value) => /^assets\/[a-z0-9][a-z0-9._-]{0,119}\.(?:png|jpe?g|gif|webp)$/i.test(String(value || ""));
+
+const isPostImageReferenced = (content, path) => {
+  const source = String(content || "");
+  return [`./content/posts/${path}`, `/content/posts/${path}`, `./${path}`].some((value) => source.includes(value));
+};
+
+const hasValidPostImageSignature = (bytes, mimeType) => {
+  if (mimeType === "image/png") {
+    return bytes.length >= 8 && [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every((value, index) => bytes[index] === value);
+  }
+  if (mimeType === "image/jpeg") {
+    return bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  }
+  if (mimeType === "image/gif") {
+    const signature = decoder.decode(bytes.slice(0, 6));
+    return signature === "GIF87a" || signature === "GIF89a";
+  }
+  if (mimeType === "image/webp") {
+    return bytes.length >= 12 && decoder.decode(bytes.slice(0, 4)) === "RIFF" && decoder.decode(bytes.slice(8, 12)) === "WEBP";
+  }
+  return false;
+};
+
+const normalizePostAssets = (input, postContent) => {
+  const source = input && typeof input === "object" ? input : {};
+  const rawUpserts = Array.isArray(source.upserts) ? source.upserts : [];
+  const rawDeletes = Array.isArray(source.deletes) ? source.deletes : [];
+  if (rawUpserts.length > MAX_POST_IMAGE_COUNT || rawDeletes.length > MAX_POST_IMAGE_COUNT * 2) {
+    throw Object.assign(new Error("单次同步的图片数量过多。"), { status: 400 });
+  }
+
+  const paths = new Set();
+  let totalSize = 0;
+  const upserts = rawUpserts.map((item) => {
+    const path = String(item?.path || "").trim();
+    const mimeType = String(item?.mimeType || "").trim().toLowerCase();
+    const content = String(item?.content || "").replace(/\s+/g, "");
+    const extension = path.split(".").pop()?.toLowerCase() || "";
+    const validExtension = {
+      "image/png": ["png"],
+      "image/jpeg": ["jpg", "jpeg"],
+      "image/gif": ["gif"],
+      "image/webp": ["webp"]
+    }[mimeType];
+
+    if (!isValidPostImagePath(path) || !validExtension?.includes(extension) || paths.has(path)) {
+      throw Object.assign(new Error("图片路径或类型不合法。"), { status: 400 });
+    }
+    if (!content || !/^[a-z0-9+/]+={0,2}$/i.test(content)) {
+      throw Object.assign(new Error("图片内容不是有效的 Base64。"), { status: 400 });
+    }
+
+    let bytes;
+    try {
+      bytes = base64Decode(content);
+    } catch {
+      throw Object.assign(new Error("图片内容不是有效的 Base64。"), { status: 400 });
+    }
+    if (!bytes.length || bytes.length > MAX_POST_IMAGE_SIZE || !hasValidPostImageSignature(bytes, mimeType)) {
+      throw Object.assign(new Error("图片内容、格式或大小不合法。"), { status: 400 });
+    }
+    if (!isPostImageReferenced(postContent, path)) {
+      throw Object.assign(new Error("待上传图片尚未插入文章正文。"), { status: 400 });
+    }
+
+    paths.add(path);
+    totalSize += bytes.length;
+    return { path, mimeType, content, size: bytes.length };
+  });
+
+  if (totalSize > MAX_POST_IMAGE_TOTAL_SIZE) {
+    throw Object.assign(new Error("待上传图片总大小不能超过 20 MB。"), { status: 400 });
+  }
+
+  const deletes = [...new Set(rawDeletes.map((item) => String(item || "").trim()).filter(Boolean))];
+  deletes.forEach((path) => {
+    if (!isValidPostImagePath(path) || paths.has(path)) {
+      throw Object.assign(new Error("待删除图片路径不合法。"), { status: 400 });
+    }
+    if (isPostImageReferenced(postContent, path)) {
+      throw Object.assign(new Error("待删除图片仍被文章正文引用。"), { status: 400 });
+    }
+  });
+
+  return { upserts, deletes };
+};
+
+const normalizePostTimestamp = (value) => {
+  const source = String(value || "").trim();
+  if (!source) return "";
+  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(source) ? `${source}T00:00:00.000Z` : source);
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString();
+};
+
+const normalizePostMetadata = (input) => {
+  const source = input && typeof input === "object" ? input : {};
+  const createdAt = normalizePostTimestamp(source.createdAt || source.date);
+  return {
+    title: String(source.title || "").trim(),
+    createdAt,
+    updatedAt: normalizePostTimestamp(source.updatedAt || createdAt),
+    file: String(source.file || "").trim(),
+    summary: String(source.summary || "").trim(),
+    module: String(source.module || "杂记").trim() || "杂记"
+  };
+};
+
+const normalizePostsIndex = (input) => {
+  if (!Array.isArray(input)) return [];
+  const files = new Set();
+  return input
+    .map(normalizePostMetadata)
+    .filter((post) => {
+      if (!post.title || !isValidPostFile(post.file) || files.has(post.file)) return false;
+      files.add(post.file);
+      return true;
+    })
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || a.title.localeCompare(b.title, "zh-CN"));
+};
+
+const parsePostsIndex = (file) => {
+  if (!file) return [];
+  try {
+    return normalizePostsIndex(JSON.parse(file.content));
+  } catch {
+    const error = new Error("远端博客索引不是有效的 JSON。");
+    error.status = 500;
+    throw error;
+  }
+};
+
+const validatePost = (input) => {
+  const source = input && typeof input === "object" ? input : {};
+  const post = {
+    title: String(source.title || "").trim(),
+    summary: String(source.summary || "").trim(),
+    module: String(source.module || "").trim(),
+    content: String(source.content || "")
+  };
+
+  if (!post.title || post.title.length > 120) {
+    throw Object.assign(new Error("文章标题不能为空且不能超过 120 个字符。"), { status: 400 });
+  }
+  if (!post.module || post.module.length > 60) {
+    throw Object.assign(new Error("文章分类不能为空且不能超过 60 个字符。"), { status: 400 });
+  }
+  if (post.summary.length > 300) {
+    throw Object.assign(new Error("文章描述不能超过 300 个字符。"), { status: 400 });
+  }
+  if (!post.content.trim() || post.content.length > MAX_POST_CONTENT_LENGTH) {
+    throw Object.assign(new Error("文章正文不能为空且不能超过 500 KB。"), { status: 400 });
+  }
+
+  return post;
+};
+
+const createPostFile = (title, timestamp, posts) => {
+  const slug = String(title || "")
+    .normalize("NFKD")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 72);
+  const date = timestamp.slice(0, 10);
+  const time = timestamp.slice(11, 19).replaceAll(":", "");
+  const base = `${date}-${slug || `post-${time}`}`;
+  const files = new Set(posts.map((post) => post.file));
+  let file = `${base}.md`;
+  let suffix = 2;
+  while (files.has(file)) {
+    file = `${base}-${suffix}.md`;
+    suffix += 1;
+  }
+  return file;
+};
+
+const fetchPostsFromRepo = async (env, requestedFile = "") => {
+  if (requestedFile && !isValidPostFile(requestedFile)) {
+    throw Object.assign(new Error("文章文件名不合法。"), { status: 400 });
+  }
+
+  const installationToken = await getInstallationToken(env);
+  const head = await getRepoHead(env, installationToken);
+  const indexFile = await getRepoFile(env, installationToken, getPostsIndexPath(env), head.commitSha);
+  const posts = parsePostsIndex(indexFile);
+  let post = null;
+
+  if (requestedFile) {
+    const metadata = posts.find((item) => item.file === requestedFile);
+    if (!metadata) {
+      throw Object.assign(new Error("远端博客索引中不存在这篇文章。"), { status: 404 });
+    }
+
+    const contentFile = await getRepoFile(
+      env,
+      installationToken,
+      `${getPostsDirectory(env)}/${requestedFile}`,
+      head.commitSha
+    );
+    if (!contentFile) {
+      throw Object.assign(new Error("远端 Markdown 文件不存在。"), { status: 404 });
+    }
+    post = {
+      metadata,
+      content: contentFile.content,
+      sha: contentFile.sha
+    };
+  }
+
+  return {
+    posts,
+    indexSha: indexFile?.sha || "",
+    headSha: head.commitSha,
+    post
+  };
+};
+
+const getRepoHead = async (env, installationToken) => {
+  const branch = String(env.GITHUB_BRANCH || "main").trim();
+  const refResponse = await githubRequest(
+    `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/ref/heads/${encodeURIComponent(branch)}`,
+    {
+      headers: {
+        Authorization: `token ${installationToken}`
+      }
+    }
+  );
+  const ref = await refResponse.json();
+  const commitSha = String(ref.object?.sha || "");
+  const commitResponse = await githubRequest(
+    `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/commits/${commitSha}`,
+    {
+      headers: {
+        Authorization: `token ${installationToken}`
+      }
+    }
+  );
+  const commit = await commitResponse.json();
+  return {
+    branch,
+    commitSha,
+    treeSha: String(commit.tree?.sha || "")
+  };
+};
+
+const createGitBlob = async (env, installationToken, content, encoding = "utf-8") => {
+  const response = await githubRequest(
+    `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/blobs`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `token ${installationToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ content, encoding })
+    }
+  );
+  const data = await response.json();
+  return String(data.sha || "");
+};
+
+const commitPostToRepo = async (env, input, originalFile, base = {}, assetInput = {}) => {
+  const postInput = validatePost(input);
+  const assets = normalizePostAssets(assetInput, postInput.content);
+  const previousFile = String(originalFile || "").trim();
+  if (previousFile && !isValidPostFile(previousFile)) {
+    throw Object.assign(new Error("原文章文件名不合法。"), { status: 400 });
+  }
+
+  const installationToken = await getInstallationToken(env);
+  const indexPath = getPostsIndexPath(env);
+  const postsDirectory = getPostsDirectory(env);
+  const head = await getRepoHead(env, installationToken);
+  const indexFile = await getRepoFile(env, installationToken, indexPath, head.commitSha);
+  const posts = parsePostsIndex(indexFile);
+  const currentMetadata = previousFile ? posts.find((item) => item.file === previousFile) : null;
+  const updatedAt = new Date().toISOString();
+  const post = {
+    ...postInput,
+    file: previousFile || createPostFile(postInput.title, updatedAt, posts)
+  };
+  const targetMetadata = posts.find((item) => item.file === post.file);
+  const previousContentFile = previousFile
+    ? await getRepoFile(env, installationToken, `${postsDirectory}/${previousFile}`, head.commitSha)
+    : null;
+  const targetContentFile = previousFile
+    ? previousContentFile
+    : await getRepoFile(env, installationToken, `${postsDirectory}/${post.file}`, head.commitSha);
+
+  if (String(base.indexSha || "") !== String(indexFile?.sha || "")) {
+    throw Object.assign(new Error("远端博客索引已变化，请重新读取后再保存。"), { status: 409 });
+  }
+  if (previousFile && !currentMetadata) {
+    throw Object.assign(new Error("远端文章已被移除，请重新读取博客目录。"), { status: 409 });
+  }
+  if (previousFile && !previousContentFile) {
+    throw Object.assign(new Error("远端文章正文已被移除，请重新读取博客目录。"), { status: 409 });
+  }
+  if (previousFile && String(base.postSha || "") !== String(previousContentFile?.sha || "")) {
+    throw Object.assign(new Error("远端文章正文已变化，请重新读取后再保存。"), { status: 409 });
+  }
+  if (!previousFile && (targetMetadata || targetContentFile)) {
+    throw Object.assign(new Error("远端已存在同名文章文件。"), { status: 409 });
+  }
+
+  const assetStates = await Promise.all(
+    [...assets.upserts.map((asset) => asset.path), ...assets.deletes].map(async (path) => ({
+      path,
+      file: await getRepoFile(env, installationToken, `${postsDirectory}/${path}`, head.commitSha)
+    }))
+  );
+  const assetStateMap = new Map(assetStates.map((item) => [item.path, item.file]));
+  if (assets.upserts.some((asset) => assetStateMap.get(asset.path))) {
+    throw Object.assign(new Error("远端已存在同名图片，请重新选择图片。"), { status: 409 });
+  }
+
+  const metadata = {
+    title: post.title,
+    createdAt: currentMetadata?.createdAt || updatedAt,
+    updatedAt,
+    file: post.file,
+    summary: post.summary,
+    module: post.module
+  };
+  const nextPosts = previousFile
+    ? posts.map((item) => (item.file === previousFile ? metadata : item))
+    : [...posts, metadata];
+  const normalizedPosts = normalizePostsIndex(nextPosts);
+  const indexContent = `${JSON.stringify(normalizedPosts, null, 2)}\n`;
+  const [indexBlobSha, postBlobSha, ...assetBlobShas] = await Promise.all([
+    createGitBlob(env, installationToken, indexContent),
+    createGitBlob(env, installationToken, post.content),
+    ...assets.upserts.map((asset) => createGitBlob(env, installationToken, asset.content, "base64"))
+  ]);
+
+  const tree = [
+    { path: indexPath, mode: "100644", type: "blob", sha: indexBlobSha },
+    { path: `${postsDirectory}/${post.file}`, mode: "100644", type: "blob", sha: postBlobSha },
+    ...assets.upserts.map((asset, index) => ({
+      path: `${postsDirectory}/${asset.path}`,
+      mode: "100644",
+      type: "blob",
+      sha: assetBlobShas[index]
+    })),
+    ...assets.deletes
+      .filter((path) => assetStateMap.get(path))
+      .map((path) => ({ path: `${postsDirectory}/${path}`, mode: "100644", type: "blob", sha: null }))
+  ];
+
+  const treeResponse = await githubRequest(
+    `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/trees`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `token ${installationToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ base_tree: head.treeSha, tree })
+    }
+  );
+  const nextTree = await treeResponse.json();
+  const action = previousFile ? "更新" : "发布";
+  const commitResponse = await githubRequest(
+    `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/commits`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `token ${installationToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: `博客：${action}${post.title}`,
+        tree: nextTree.sha,
+        parents: [head.commitSha],
+        author: {
+          name: env.GITHUB_COMMITTER_NAME || env.GITHUB_ALLOWED_LOGIN || env.GITHUB_OWNER,
+          email: env.GITHUB_COMMITTER_EMAIL || "yushenqihai@gmail.com"
+        },
+        committer: {
+          name: env.GITHUB_COMMITTER_NAME || env.GITHUB_ALLOWED_LOGIN || env.GITHUB_OWNER,
+          email: env.GITHUB_COMMITTER_EMAIL || "yushenqihai@gmail.com"
+        }
+      })
+    }
+  );
+  const commit = await commitResponse.json();
+
+  try {
+    await githubRequest(
+      `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/refs/heads/${encodeURIComponent(head.branch)}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `token ${installationToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ sha: commit.sha, force: false })
+      }
+    );
+  } catch (error) {
+    if (error?.status === 409 || error?.status === 422) {
+      throw Object.assign(new Error("远端分支刚刚发生变化，请重新读取后再保存。"), { status: 409 });
+    }
+    throw error;
+  }
+
+  return {
+    posts: normalizedPosts,
+    indexSha: indexBlobSha,
+    postSha: postBlobSha,
+    post: { ...metadata, content: post.content },
+    assets: {
+      uploaded: assets.upserts.map((asset) => asset.path),
+      deleted: assets.deletes.filter((path) => assetStateMap.get(path))
+    },
+    commitSha: String(commit.sha || ""),
+    commitUrl: String(commit.html_url || ""),
+    updatedAt
+  };
+};
+
 const fetchTasksFromRepo = async (env) => {
   const installationToken = await getInstallationToken(env);
   try {
@@ -557,7 +1020,7 @@ const handleAuthCallback = async (request, env) => {
   const login = await fetchViewerLogin(userToken);
 
   if (login !== (env.GITHUB_ALLOWED_LOGIN || env.GITHUB_OWNER)) {
-    return json({ message: `当前登录账号 ${login} 不具备任务板写权限。` }, 403);
+    return json({ message: `当前登录账号 ${login} 不具备站点写权限。` }, 403);
   }
 
   const sessionToken = await signPayload(env.SESSION_SECRET, {
@@ -629,6 +1092,36 @@ const handlePutTasks = async (request, env) => {
   }
 };
 
+const handleGetPosts = async (request, env) => {
+  const url = new URL(request.url);
+  const data = await fetchPostsFromRepo(env, String(url.searchParams.get("file") || "").trim());
+  return withCors(json(data), request, env);
+};
+
+const handlePutPost = async (request, env) => {
+  await requireOwnerSession(request, env);
+
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return withCors(json({ message: "请求体不是有效的 JSON。" }, 400), request, env);
+  }
+
+  if (!payload || typeof payload !== "object" || !payload.post) {
+    return withCors(json({ message: "缺少文章内容。" }, 400), request, env);
+  }
+
+  const result = await commitPostToRepo(
+    env,
+    payload.post,
+    String(payload.originalFile || ""),
+    payload.base && typeof payload.base === "object" ? payload.base : {},
+    payload.assets && typeof payload.assets === "object" ? payload.assets : {}
+  );
+  return withCors(json(result), request, env);
+};
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -662,16 +1155,26 @@ export default {
         return handlePutTasks(request, env);
       }
 
+      if (url.pathname === "/api/posts" && request.method === "GET") {
+        return handleGetPosts(request, env);
+      }
+
+      if (url.pathname === "/api/posts" && request.method === "PUT") {
+        return handlePutPost(request, env);
+      }
+
       return withCors(
         json({
-          name: "qihai-task-board-api",
+          name: "qihai-site-api",
           routes: [
             "GET /api/session",
             "GET /api/auth/start",
             "GET /api/auth/callback",
             "POST /api/logout",
             "GET /api/tasks",
-            "PUT /api/tasks"
+            "PUT /api/tasks",
+            "GET /api/posts?file=example.md",
+            "PUT /api/posts"
           ]
         }),
         request,
