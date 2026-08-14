@@ -1,7 +1,7 @@
 {
   "version": 1,
   "title": "qihai task board",
-  "updatedAt": "2026-08-14T08:28:21.949Z",
+  "updatedAt": "2026-08-14T08:28:50.445Z",
   "updatedBy": "qihaichiaki",
   "columns": [
     {
@@ -15,7 +15,6 @@
       "id": "active",
       "title": "进行中",
       "taskIds": [
-        "task-hgzm94ly",
         "task-mwv7h5i3"
       ]
     },
@@ -108,15 +107,6 @@
       "columnId": "active",
       "createdAt": "2026-07-30T10:16:14.891Z",
       "updatedAt": "2026-07-30T10:16:55.196Z"
-    },
-    {
-      "id": "task-hgzm94ly",
-      "title": "测试",
-      "description": "",
-      "tags": [],
-      "columnId": "active",
-      "createdAt": "2026-08-14T08:28:13.834Z",
-      "updatedAt": "2026-08-14T08:28:19.049Z"
     }
   ]
 }
