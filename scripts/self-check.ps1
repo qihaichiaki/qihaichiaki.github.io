@@ -19,6 +19,7 @@ function Assert-True {
 
 Write-Host "[1/5] 检查关键文件..."
 $required = @(
+  "assets/ba.jpg",
   "index.html",
   "blog.html",
   "tasks.html",
@@ -71,6 +72,9 @@ Assert-True ($blog -match "src/styles/main.css") "blog.html 未引用 src/styles
 Assert-True ($blog -match "src/blog.js") "blog.html 未引用 src/blog.js"
 Assert-True ($tasks -match "src/styles/main.css") "tasks.html 未引用 src/styles/main.css"
 Assert-True ($tasks -match "src/tasks.js") "tasks.html 未引用 src/tasks.js"
+Assert-True ($index -match "assets/ba.jpg") "index.html 未引用网站图标"
+Assert-True ($blog -match "assets/ba.jpg") "blog.html 未引用网站图标"
+Assert-True ($tasks -match "assets/ba.jpg") "tasks.html 未引用网站图标"
 
 Write-Host "[3/5] 检查脚本语法..."
 node --check "src/main.js" | Out-Null
@@ -108,6 +112,7 @@ try {
   $indexResp = Invoke-WebRequest -Uri "$base/index.html" -UseBasicParsing
   $blogResp = Invoke-WebRequest -Uri "$base/blog.html" -UseBasicParsing
   $tasksResp = Invoke-WebRequest -Uri "$base/tasks.html" -UseBasicParsing
+  $iconResp = Invoke-WebRequest -Uri "$base/assets/ba.jpg" -UseBasicParsing
   $cssResp = Invoke-WebRequest -Uri "$base/src/styles/main.css" -UseBasicParsing
   $mainResp = Invoke-WebRequest -Uri "$base/src/main.js" -UseBasicParsing
   $blogJsResp = Invoke-WebRequest -Uri "$base/src/blog.js" -UseBasicParsing
@@ -120,6 +125,8 @@ try {
   Assert-True ($indexResp.StatusCode -eq 200) "index.html 访问失败"
   Assert-True ($blogResp.StatusCode -eq 200) "blog.html 访问失败"
   Assert-True ($tasksResp.StatusCode -eq 200) "tasks.html 访问失败"
+  Assert-True ($iconResp.StatusCode -eq 200) "网站图标访问失败"
+  Assert-True ($iconResp.Headers["Content-Type"] -match "image/jpeg") "网站图标类型异常"
   Assert-True ($cssResp.StatusCode -eq 200) "main.css 访问失败"
   Assert-True ($mainResp.StatusCode -eq 200) "main.js 访问失败"
   Assert-True ($blogJsResp.StatusCode -eq 200) "blog.js 访问失败"
