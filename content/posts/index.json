@@ -10,9 +10,9 @@
   {
     "title": "编码规范",
     "createdAt": "2026-06-19T17:53:50.000Z",
-    "updatedAt": "2026-06-19T17:53:50.000Z",
+    "updatedAt": "2026-08-17T05:56:13.282Z",
     "file": "2026-06-20-coding-standards.md",
-    "summary": "",
+    "summary": "常用的.clang-format规范以及相关Git提交规范",
     "module": "杂记"
   },
   {
