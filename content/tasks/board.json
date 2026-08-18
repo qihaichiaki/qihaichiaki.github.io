@@ -1,7 +1,7 @@
 {
   "version": 1,
   "title": "qihai task board",
-  "updatedAt": "2026-08-18T02:00:38.188Z",
+  "updatedAt": "2026-08-18T02:02:53.672Z",
   "updatedBy": "qihaichiaki",
   "columns": [
     {
@@ -13,6 +13,7 @@
       "id": "active",
       "title": "进行中",
       "taskIds": [
+        "task-4zmrx0ql",
         "task-mwv7h5i3"
       ]
     },
@@ -106,6 +107,17 @@
       "columnId": "active",
       "createdAt": "2026-07-30T10:16:14.891Z",
       "updatedAt": "2026-07-30T10:16:55.196Z"
+    },
+    {
+      "id": "task-4zmrx0ql",
+      "title": "FacePattern核心框架搭建",
+      "description": "利用反编译代码进行整理实现",
+      "tags": [
+        "WORK"
+      ],
+      "columnId": "active",
+      "createdAt": "2026-08-18T02:01:38.174Z",
+      "updatedAt": "2026-08-18T02:02:48.151Z"
     }
   ]
 }
