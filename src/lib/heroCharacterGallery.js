@@ -15,7 +15,8 @@ const FALLBACK_IMAGE_SOURCES = [
 const IMAGE_DIRECTORY = "assets/img";
 const IMAGE_EXTENSION_PATTERN = /\.(?:avif|gif|jpe?g|png|webp)$/i;
 const ROTATION_INTERVAL_MS = 30_000;
-const TRANSITION_DURATION_MS = 2_800;
+const TRANSITION_DURATION_MS = 3_200;
+const GALLERY_STATE_KEY = "qihai_hero_character_gallery_v1";
 
 const IMAGE_PROFILES = [
   {
@@ -111,6 +112,25 @@ const createAsset = (src, name = "") => ({
 
 const FALLBACK_IMAGES = FALLBACK_IMAGE_SOURCES.map((src) => createAsset(src));
 
+const readStoredImageName = () => {
+  try {
+    return window.localStorage.getItem(GALLERY_STATE_KEY) || "";
+  } catch {
+    return "";
+  }
+};
+
+const storeImageName = (asset) => {
+  try {
+    window.localStorage.setItem(GALLERY_STATE_KEY, asset?.name || "");
+  } catch {
+    // 隐私模式或存储空间不可用时，不影响轮播本身。
+  }
+};
+
+const findImageIndexByName = (images, name) =>
+  name ? images.findIndex((asset) => asset.name === name) : -1;
+
 const sortImages = (images) =>
   images.sort((left, right) => {
     const leftOrder = fallbackOrder.get(left.src.toLowerCase());
@@ -178,6 +198,7 @@ const applyAsset = (layer, asset, metadata = null) => {
   foreground.src = asset.src;
   backdrop.src = asset.src;
   layer.dataset.characterSrc = asset.src;
+  layer.dataset.characterName = asset.name;
   applyProfile(layer, selectImageProfile(metadata));
   return foreground;
 };
@@ -257,12 +278,14 @@ export const initHeroCharacterGallery = (selector = "[data-character-gallery]") 
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const discoveryController = new AbortController();
+  const storedImageName = readStoredImageName();
   let characterImages = [...FALLBACK_IMAGES];
-  let currentIndex = 0;
+  let currentIndex = Math.max(0, findImageIndexByName(characterImages, storedImageName));
   let activeLayerIndex = 0;
   let rotationTimer = 0;
   let transitionTimer = 0;
   let inView = true;
+  let isPointerOver = false;
   let transitioning = false;
   let destroyed = false;
 
@@ -274,9 +297,9 @@ export const initHeroCharacterGallery = (selector = "[data-character-gallery]") 
     );
   };
 
-  const initialForeground = applyAsset(layers[0], characterImages[0]);
+  const initialForeground = applyAsset(layers[0], characterImages[currentIndex]);
   updateAccessibleLabel();
-  preloadImage(characterImages[0].src)
+  preloadImage(characterImages[currentIndex].src)
     .then((metadata) => {
       if (!destroyed) applyProfile(layers[0], selectImageProfile(metadata));
     })
@@ -289,7 +312,13 @@ export const initHeroCharacterGallery = (selector = "[data-character-gallery]") 
     rotationTimer = 0;
   };
 
-  const canRotate = () => !destroyed && inView && !document.hidden && !reducedMotion.matches;
+  const canRotate = () =>
+    !destroyed &&
+    inView &&
+    !isPointerOver &&
+    !root.matches(":hover") &&
+    !document.hidden &&
+    !reducedMotion.matches;
 
   const preloadFollowingImage = () => {
     if (destroyed || characterImages.length < 2) return;
@@ -313,6 +342,7 @@ export const initHeroCharacterGallery = (selector = "[data-character-gallery]") 
     currentIndex = nextIndex;
     activeLayerIndex = nextLayerIndex;
     transitioning = false;
+    storeImageName(characterImages[currentIndex]);
     updateAccessibleLabel();
     preloadFollowingImage();
     scheduleRotation();
@@ -333,6 +363,10 @@ export const initHeroCharacterGallery = (selector = "[data-character-gallery]") 
     try {
       const metadata = await preloadImage(nextAsset.src);
       if (destroyed) return;
+      if (!manual && !canRotate()) {
+        transitioning = false;
+        return;
+      }
 
       const foreground = applyAsset(nextLayer, nextAsset, metadata);
       try {
@@ -383,6 +417,18 @@ export const initHeroCharacterGallery = (selector = "[data-character-gallery]") 
     root.style.setProperty("--gallery-pointer-y", "50%");
   };
 
+  const handlePointerEnter = (event) => {
+    if (event.pointerType === "touch") return;
+    isPointerOver = true;
+    clearRotationTimer();
+  };
+
+  const handlePointerLeave = () => {
+    isPointerOver = false;
+    resetPointerPosition();
+    syncRotation();
+  };
+
   const syncRotation = () => {
     if (canRotate()) {
       preloadFollowingImage();
@@ -398,8 +444,12 @@ export const initHeroCharacterGallery = (selector = "[data-character-gallery]") 
       if (destroyed) return;
 
       const activeSource = layers[activeLayerIndex].dataset.characterSrc || "";
+      const activeName = layers[activeLayerIndex].dataset.characterName || storedImageName;
       characterImages = discoveredImages;
-      currentIndex = characterImages.findIndex((asset) => asset.src === activeSource);
+      currentIndex = characterImages.findIndex(
+        (asset) => asset.name === activeName || asset.src === activeSource
+      );
+      if (currentIndex < 0) currentIndex = 0;
       updateAccessibleLabel();
       preloadFollowingImage();
       scheduleRotation();
@@ -423,8 +473,9 @@ export const initHeroCharacterGallery = (selector = "[data-character-gallery]") 
     window.clearTimeout(transitionTimer);
     visibilityObserver.disconnect();
     root.removeEventListener("click", handleManualAdvance);
+    root.removeEventListener("pointerenter", handlePointerEnter);
     root.removeEventListener("pointermove", updatePointerPosition);
-    root.removeEventListener("pointerleave", resetPointerPosition);
+    root.removeEventListener("pointerleave", handlePointerLeave);
     reducedMotion.removeEventListener("change", syncRotation);
     document.removeEventListener("visibilitychange", syncRotation);
     window.removeEventListener("pagehide", destroy);
@@ -432,8 +483,9 @@ export const initHeroCharacterGallery = (selector = "[data-character-gallery]") 
 
   visibilityObserver.observe(root);
   root.addEventListener("click", handleManualAdvance);
+  root.addEventListener("pointerenter", handlePointerEnter);
   root.addEventListener("pointermove", updatePointerPosition);
-  root.addEventListener("pointerleave", resetPointerPosition);
+  root.addEventListener("pointerleave", handlePointerLeave);
   reducedMotion.addEventListener("change", syncRotation);
   document.addEventListener("visibilitychange", syncRotation);
   window.addEventListener("pagehide", destroy, { once: true });
