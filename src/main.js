@@ -1,7 +1,7 @@
 import { hero } from "./components/hero.js";
 import { siteHeader } from "./components/siteHeader.js";
+import { initHeroCharacterGallery } from "./lib/heroCharacterGallery.js";
 import { initNebulaBackground } from "./lib/nebulaBackground.js";
-import { initHeroMagicCircle } from "./lib/magicCircle.js";
 import { initSiteHeaderAuth } from "./lib/siteHeaderAuth.js";
 import { fetchRemoteBoard, hasRemoteApi } from "./lib/tasksApi.js";
 import { normalizeBoard } from "./lib/tasksModel.js";
@@ -10,7 +10,7 @@ document.querySelector("#app").innerHTML = renderPageWithHeader(hero(), { homeHr
 mountHomeTaskPreviewSection();
 const headerStatePromise = initSiteHeaderAuth();
 initNebulaBackground();
-initHeroMagicCircle();
+initHeroCharacterGallery();
 
 const GITHUB_USER = "qihaichiaki";
 

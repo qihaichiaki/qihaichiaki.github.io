@@ -58,6 +58,13 @@
   --sky-d2: rgba(156, 236, 255, 0.22);
   --hero-veil-a: rgba(255, 255, 255, 0.14);
   --hero-veil-b: rgba(127, 93, 255, 0.16);
+  --hero-character-edge: rgba(237, 244, 255, 0.96);
+  --hero-character-glow-a: rgba(111, 166, 255, 0.34);
+  --hero-character-glow-b: rgba(127, 93, 255, 0.28);
+  --hero-character-smoke-a: rgba(221, 245, 255, 0.68);
+  --hero-character-smoke-b: rgba(148, 181, 255, 0.48);
+  --hero-character-particle: rgba(235, 251, 255, 0.92);
+  --hero-character-opacity: 0.9;
   --orb-highlight: rgba(255, 255, 255, 0.84);
   --orb-highlight-clear: rgba(255, 255, 255, 0);
   --orb-mid: rgba(79, 107, 255, 0.28);
@@ -134,6 +141,13 @@
   --sky-d2: rgba(68, 224, 255, 0.34);
   --hero-veil-a: rgba(165, 201, 255, 0.26);
   --hero-veil-b: rgba(90, 128, 255, 0.3);
+  --hero-character-edge: rgba(10, 18, 43, 0.96);
+  --hero-character-glow-a: rgba(88, 158, 255, 0.42);
+  --hero-character-glow-b: rgba(98, 75, 255, 0.38);
+  --hero-character-smoke-a: rgba(136, 204, 255, 0.54);
+  --hero-character-smoke-b: rgba(132, 113, 255, 0.48);
+  --hero-character-particle: rgba(211, 244, 255, 0.96);
+  --hero-character-opacity: 0.82;
   --orb-highlight: rgba(219, 233, 255, 0.92);
   --orb-highlight-clear: rgba(219, 233, 255, 0);
   --orb-mid: rgba(110, 149, 255, 0.34);
@@ -657,7 +671,7 @@ button:focus-visible,
 h1,
 .lead,
 .hero-actions,
-.hero-magic {
+.hero-character-gallery {
   opacity: 0;
   transform: translateY(14px);
   animation: lift 620ms ease forwards;
@@ -695,17 +709,344 @@ h1 {
   flex-wrap: wrap;
 }
 
-.hero-magic {
+.hero-character-gallery {
+  --gallery-shift-x: 0px;
+  --gallery-shift-y: 0px;
+  --gallery-pointer-x: 50%;
+  --gallery-pointer-y: 50%;
   animation-delay: 420ms;
-  justify-self: center;
-  width: clamp(280px, 38vw, 560px);
+  justify-self: end;
+  width: clamp(320px, 39vw, 560px);
   max-width: 100%;
-  aspect-ratio: 1;
+  height: clamp(420px, 66vh, 650px);
   position: relative;
-  display: grid;
-  place-items: center;
+  isolation: isolate;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  appearance: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.hero-character-aura {
+  position: absolute;
+  inset: 8% 3% 4%;
+  z-index: -1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 46% 42%, var(--hero-character-glow-a), transparent 54%),
+    radial-gradient(circle at 62% 58%, var(--hero-character-glow-b), transparent 64%);
+  filter: blur(26px);
+  opacity: 0.76;
+  animation: characterAuraBreath 8s ease-in-out infinite;
+  transition: filter 900ms ease, opacity 900ms ease;
+}
+
+.hero-character-aura::before,
+.hero-character-aura::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(18px);
+  mix-blend-mode: screen;
+}
+
+.hero-character-aura::before {
+  inset: 10% 30% 32% 2%;
+  background: radial-gradient(ellipse, var(--hero-character-smoke-a), transparent 70%);
+  opacity: 0.34;
+  animation: characterAuraCloudA 12s ease-in-out infinite alternate;
+}
+
+.hero-character-aura::after {
+  inset: 34% 0 8% 34%;
+  background: radial-gradient(ellipse, var(--hero-character-smoke-b), transparent 72%);
+  opacity: 0.3;
+  animation: characterAuraCloudB 14s ease-in-out infinite alternate;
+}
+
+.hero-character-stage {
+  position: absolute;
+  inset: 0;
   isolation: isolate;
   overflow: visible;
+  translate: var(--gallery-shift-x) var(--gallery-shift-y);
+  scale: 1;
+  transition: translate 520ms cubic-bezier(0.22, 1, 0.36, 1), scale 900ms cubic-bezier(0.22, 1, 0.36, 1), filter 900ms ease;
+}
+
+.hero-character-stage::before {
+  content: "";
+  position: absolute;
+  inset: 3% 2%;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at var(--gallery-pointer-x) var(--gallery-pointer-y), var(--hero-character-smoke-a), transparent 23%),
+    radial-gradient(ellipse 42% 34% at 34% 72%, var(--hero-character-smoke-b), transparent 74%),
+    radial-gradient(ellipse 36% 28% at 74% 24%, var(--hero-character-smoke-a), transparent 72%);
+  filter: blur(18px);
+  opacity: 0.2;
+  mix-blend-mode: screen;
+  animation: characterMistVeil 11s ease-in-out infinite alternate;
+  transition: opacity 800ms ease, filter 800ms ease;
+}
+
+.hero-character-stage::after {
+  content: "";
+  position: absolute;
+  inset: -10% -8%;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 24% 19% at 18% 58%, color-mix(in srgb, var(--hero-character-edge) 18%, transparent), transparent 74%),
+    radial-gradient(ellipse 30% 22% at 78% 28%, color-mix(in srgb, var(--hero-character-smoke-a) 16%, transparent), transparent 76%),
+    radial-gradient(ellipse 34% 20% at 62% 84%, color-mix(in srgb, var(--hero-character-smoke-b) 13%, transparent), transparent 78%);
+  filter: blur(30px);
+  opacity: 0.18;
+  mix-blend-mode: screen;
+}
+
+.hero-character-layer {
+  --character-position: 50% 40%;
+  --character-scale: 1.02;
+  --character-hover-scale: 1.055;
+  --character-fit: cover;
+  --character-inline-inset: -3%;
+  --character-block-inset: -3%;
+  --contour-x: 52%;
+  --contour-y: 50%;
+  --contour-clear-rx: 48%;
+  --contour-clear-ry: 55%;
+  --contour-soft-rx: 60%;
+  --contour-soft-ry: 63%;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0;
+  transform: translateY(10px);
+  filter: blur(12px) saturate(0.82) brightness(1.06);
+  will-change: opacity, transform, filter;
+  pointer-events: none;
+}
+
+.hero-character-backdrop,
+.hero-character-image {
+  position: absolute;
+  display: block;
+  max-width: none;
+  object-position: var(--character-position);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.hero-character-backdrop {
+  inset: -12%;
+  z-index: 0;
+  width: 124%;
+  height: 124%;
+  object-fit: cover;
+  opacity: 0.2;
+  scale: 1.12;
+  filter: blur(54px) saturate(0.68) contrast(0.82) brightness(1.12);
+  -webkit-mask-image: radial-gradient(
+    ellipse var(--contour-soft-rx) var(--contour-soft-ry) at var(--contour-x) var(--contour-y),
+    rgba(0, 0, 0, 0.38) 0 26%,
+    rgba(0, 0, 0, 0.27) 42%,
+    rgba(0, 0, 0, 0.13) 57%,
+    rgba(0, 0, 0, 0.04) 70%,
+    transparent 82%
+  );
+  mask-image: radial-gradient(
+    ellipse var(--contour-soft-rx) var(--contour-soft-ry) at var(--contour-x) var(--contour-y),
+    rgba(0, 0, 0, 0.38) 0 26%,
+    rgba(0, 0, 0, 0.27) 42%,
+    rgba(0, 0, 0, 0.13) 57%,
+    rgba(0, 0, 0, 0.04) 70%,
+    transparent 82%
+  );
+}
+
+.hero-character-image {
+  inset: auto;
+  top: var(--character-block-inset);
+  left: var(--character-inline-inset);
+  z-index: 1;
+  width: calc(100% - var(--character-inline-inset) - var(--character-inline-inset));
+  height: calc(100% - var(--character-block-inset) - var(--character-block-inset));
+  object-fit: var(--character-fit);
+  scale: var(--character-scale);
+  filter: saturate(0.92) contrast(0.98);
+  -webkit-mask-image: radial-gradient(
+    ellipse var(--contour-clear-rx) var(--contour-clear-ry) at var(--contour-x) var(--contour-y),
+    #000 0 46%,
+    rgba(0, 0, 0, 0.94) 56%,
+    rgba(0, 0, 0, 0.7) 65%,
+    rgba(0, 0, 0, 0.34) 73%,
+    rgba(0, 0, 0, 0.1) 80%,
+    transparent 87%
+  );
+  mask-image: radial-gradient(
+    ellipse var(--contour-clear-rx) var(--contour-clear-ry) at var(--contour-x) var(--contour-y),
+    #000 0 46%,
+    rgba(0, 0, 0, 0.94) 56%,
+    rgba(0, 0, 0, 0.7) 65%,
+    rgba(0, 0, 0, 0.34) 73%,
+    rgba(0, 0, 0, 0.1) 80%,
+    transparent 87%
+  );
+  transition: filter 1.2s ease, scale 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero-character-backdrop,
+.hero-character-image {
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.hero-character-layer.is-active {
+  opacity: var(--hero-character-opacity);
+  transform: translateY(0);
+  filter: blur(0);
+  transition: opacity 1.2s ease, transform 1.4s cubic-bezier(0.22, 1, 0.36, 1), filter 1.2s ease;
+}
+
+.hero-character-gallery:not(.is-ready) .hero-character-layer.is-active {
+  opacity: 0;
+  transform: translateY(18px);
+  filter: blur(18px) saturate(0.72) brightness(1.12);
+}
+
+.hero-character-layer.is-leaving {
+  z-index: 1;
+  animation: characterDissolveOut 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.hero-character-layer.is-entering {
+  z-index: 2;
+  animation: characterMaterializeIn 2.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-character-dissolve {
+  position: absolute;
+  inset: -4% -2%;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 8% 26%, var(--hero-character-particle) 0 1.5px, transparent 3px),
+    radial-gradient(circle at 16% 68%, var(--hero-character-smoke-a) 0 2px, transparent 4px),
+    radial-gradient(circle at 23% 43%, var(--hero-character-particle) 0 1px, transparent 2.5px),
+    radial-gradient(circle at 31% 82%, var(--hero-character-smoke-b) 0 2.4px, transparent 4.8px),
+    radial-gradient(circle at 37% 17%, var(--hero-character-smoke-a) 0 1.8px, transparent 3.8px),
+    radial-gradient(circle at 44% 58%, var(--hero-character-particle) 0 1.4px, transparent 3px),
+    radial-gradient(circle at 51% 32%, var(--hero-character-smoke-b) 0 2.2px, transparent 4.6px),
+    radial-gradient(circle at 57% 76%, var(--hero-character-particle) 0 1.2px, transparent 2.8px),
+    radial-gradient(circle at 64% 12%, var(--hero-character-smoke-a) 0 2.6px, transparent 5px),
+    radial-gradient(circle at 69% 49%, var(--hero-character-particle) 0 1.6px, transparent 3.2px),
+    radial-gradient(circle at 76% 88%, var(--hero-character-smoke-b) 0 2px, transparent 4.2px),
+    radial-gradient(circle at 82% 36%, var(--hero-character-particle) 0 1.1px, transparent 2.6px),
+    radial-gradient(circle at 89% 66%, var(--hero-character-smoke-a) 0 2.2px, transparent 4.5px),
+    radial-gradient(circle at 94% 20%, var(--hero-character-particle) 0 1.5px, transparent 3.2px);
+  filter: drop-shadow(0 0 7px var(--hero-character-glow-a));
+  mix-blend-mode: screen;
+  -webkit-mask-image: radial-gradient(ellipse 64% 72% at 53% 50%, #000 28%, rgba(0, 0, 0, 0.76) 58%, transparent 90%);
+  mask-image: radial-gradient(ellipse 64% 72% at 53% 50%, #000 28%, rgba(0, 0, 0, 0.76) 58%, transparent 90%);
+  transition: opacity 700ms ease;
+}
+
+.hero-character-dissolve::before,
+.hero-character-dissolve::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+
+.hero-character-dissolve::before {
+  inset: 10% 18% 24% 1%;
+  background:
+    radial-gradient(ellipse at 32% 52%, var(--hero-character-smoke-a), transparent 64%),
+    radial-gradient(ellipse at 68% 42%, var(--hero-character-smoke-b), transparent 70%);
+  filter: blur(24px);
+}
+
+.hero-character-dissolve::after {
+  inset: 24% 0 4% 26%;
+  background:
+    radial-gradient(ellipse at 54% 38%, var(--hero-character-smoke-a), transparent 66%),
+    radial-gradient(ellipse at 40% 72%, var(--hero-character-smoke-b), transparent 72%);
+  filter: blur(30px);
+}
+
+.hero-character-gallery.is-transitioning .hero-character-dissolve {
+  animation: characterDustDrift 2.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-character-gallery.is-transitioning .hero-character-dissolve::before {
+  animation: characterSmokeBloomA 2.8s ease-in-out forwards;
+}
+
+.hero-character-gallery.is-transitioning .hero-character-dissolve::after {
+  animation: characterSmokeBloomB 2.8s ease-in-out forwards;
+}
+
+.hero-character-gallery:focus-visible {
+  outline: 0;
+}
+
+.hero-character-gallery:focus-visible .hero-character-stage {
+  filter: drop-shadow(0 0 20px var(--hero-character-glow-a));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hero-character-gallery:hover .hero-character-stage {
+    scale: 1.035;
+    filter: drop-shadow(0 16px 30px color-mix(in srgb, var(--hero-character-glow-b) 46%, transparent));
+  }
+
+  .hero-character-gallery:hover .hero-character-aura {
+    opacity: 0.96;
+    filter: blur(32px) saturate(1.2);
+  }
+
+  .hero-character-gallery:hover .hero-character-stage::before {
+    opacity: 0.4;
+    filter: blur(14px);
+  }
+
+  .hero-character-gallery:not(.is-transitioning):hover .hero-character-layer.is-active .hero-character-image {
+    filter: saturate(1.04) contrast(1.01) brightness(1.04);
+    scale: var(--character-hover-scale);
+  }
+
+  .hero-character-gallery:not(.is-transitioning):hover .hero-character-layer.is-active .hero-character-backdrop {
+    opacity: 0.3;
+    filter: blur(42px) saturate(0.86) brightness(1.16);
+  }
+
+  .hero-character-gallery:not(.is-transitioning):hover .hero-character-dissolve {
+    opacity: 0.42;
+    animation: characterHoverDust 5.2s linear infinite;
+  }
+
+  .hero-character-gallery:not(.is-transitioning):hover .hero-character-dissolve::before {
+    animation: characterHoverSmoke 6.5s ease-in-out infinite alternate;
+  }
+}
+
+.hero-character-gallery:active .hero-character-stage {
+  scale: 1.012;
+  transition-duration: 120ms;
 }
 
 .arcane-panel {
@@ -3533,6 +3874,187 @@ h1 {
   }
 }
 
+@keyframes characterAuraBreath {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: scale(0.96) translateY(0);
+  }
+  50% {
+    opacity: 0.84;
+    transform: scale(1.04) translateY(-8px);
+  }
+}
+
+@keyframes characterAuraCloudA {
+  0% {
+    transform: translate3d(-5%, 3%, 0) scale(0.9, 1.04);
+  }
+  55% {
+    transform: translate3d(8%, -7%, 0) scale(1.12, 0.94);
+  }
+  100% {
+    transform: translate3d(2%, 8%, 0) scale(0.98, 1.12);
+  }
+}
+
+@keyframes characterAuraCloudB {
+  0% {
+    transform: translate3d(7%, -4%, 0) scale(1.08, 0.92);
+  }
+  50% {
+    transform: translate3d(-8%, 6%, 0) scale(0.94, 1.12);
+  }
+  100% {
+    transform: translate3d(4%, -8%, 0) scale(1.14, 0.98);
+  }
+}
+
+@keyframes characterContourMorph {
+  0% {
+    border-radius: 46% 54% 49% 51% / 43% 46% 54% 57%;
+  }
+  45% {
+    border-radius: 52% 48% 55% 45% / 48% 42% 58% 52%;
+  }
+  100% {
+    border-radius: 49% 51% 44% 56% / 55% 49% 51% 45%;
+  }
+}
+
+@keyframes characterMistVeil {
+  0% {
+    opacity: 0.14;
+    transform: translate3d(-3%, 2%, 0) scale(0.96);
+  }
+  52% {
+    opacity: 0.3;
+    transform: translate3d(4%, -3%, 0) scale(1.06);
+  }
+  100% {
+    opacity: 0.18;
+    transform: translate3d(1%, 4%, 0) scale(1.01);
+  }
+}
+
+@keyframes characterDissolveOut {
+  0% {
+    opacity: var(--hero-character-opacity);
+    transform: translate3d(0, 0, 0);
+    filter: blur(0) saturate(0.92) contrast(0.98);
+  }
+  30% {
+    opacity: var(--hero-character-opacity);
+    transform: translate3d(-2px, -3px, 0);
+    filter: blur(2px) saturate(0.86) brightness(1.05);
+  }
+  66% {
+    opacity: 0.28;
+    transform: translate3d(-10px, -9px, 0) scale(0.98);
+    filter: blur(11px) saturate(0.62) brightness(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-22px, -16px, 0) scale(0.95);
+    filter: blur(26px) saturate(0.42) brightness(1.34);
+  }
+}
+
+@keyframes characterMaterializeIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(18px, 20px, 0) scale(1.06);
+    filter: blur(28px) saturate(0.52) brightness(1.3);
+  }
+  26% {
+    opacity: 0.08;
+  }
+  56% {
+    opacity: 0.42;
+    transform: translate3d(8px, 9px, 0) scale(1.025);
+    filter: blur(12px) saturate(0.76) brightness(1.16);
+  }
+  82% {
+    opacity: var(--hero-character-opacity);
+    filter: blur(3px) saturate(0.88) brightness(1.05);
+  }
+  100% {
+    opacity: var(--hero-character-opacity);
+    transform: translate3d(0, 0, 0);
+    filter: blur(0) saturate(0.92) contrast(0.98);
+  }
+}
+
+@keyframes characterDustDrift {
+  0% {
+    opacity: 0;
+    transform: translate3d(36px, 18px, 0) scale(0.86) rotate(3deg);
+  }
+  30% {
+    opacity: 0.96;
+    filter: drop-shadow(0 0 12px var(--hero-character-glow-a));
+  }
+  68% {
+    opacity: 0.64;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-52px, -28px, 0) scale(1.18) rotate(-4deg);
+    filter: drop-shadow(0 0 4px var(--hero-character-glow-b));
+  }
+}
+
+@keyframes characterSmokeBloomA {
+  0% {
+    opacity: 0;
+    transform: translate3d(12%, 8%, 0) scale(0.72, 0.82);
+  }
+  34% {
+    opacity: 0.74;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-16%, -10%, 0) scale(1.42, 1.18);
+  }
+}
+
+@keyframes characterSmokeBloomB {
+  0% {
+    opacity: 0;
+    transform: translate3d(-10%, -4%, 0) scale(0.76, 0.7);
+  }
+  44% {
+    opacity: 0.68;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(14%, 9%, 0) scale(1.34, 1.46);
+  }
+}
+
+@keyframes characterHoverDust {
+  0% {
+    transform: translate3d(0, 5px, 0);
+  }
+  50% {
+    opacity: 0.58;
+  }
+  100% {
+    transform: translate3d(-7px, -12px, 0);
+  }
+}
+
+@keyframes characterHoverSmoke {
+  0% {
+    opacity: 0.24;
+    transform: translate3d(4%, 3%, 0) scale(0.94, 1.02);
+  }
+  100% {
+    opacity: 0.58;
+    transform: translate3d(-7%, -5%, 0) scale(1.12, 0.96);
+  }
+}
+
 @keyframes float {
   0% {
     transform: translateY(0);
@@ -3831,10 +4353,25 @@ h1 {
 @media (max-width: 900px) {
   .hero-shell {
     grid-template-columns: 1fr;
+    min-height: calc(100svh - 160px);
+    align-items: start;
   }
 
-  .hero-magic {
-    width: min(420px, 82vw);
+  .hero-copy {
+    position: relative;
+    z-index: 2;
+    padding-top: clamp(18px, 7vh, 64px);
+  }
+
+  .hero-character-gallery {
+    --hero-character-opacity: 0.72;
+    position: absolute;
+    right: -10vw;
+    bottom: -12vh;
+    z-index: 1;
+    width: min(88vw, 540px);
+    height: min(68svh, 600px);
+    opacity: 0.8;
   }
 
   .post-editor-fields {
@@ -3882,6 +4419,39 @@ h1 {
   :root {
     --page-gutter: 18px;
     --site-header-offset: 72px;
+  }
+
+  .hero {
+    min-height: 100svh;
+    padding: 86px 18px 24px;
+    place-items: stretch center;
+  }
+
+  .hero-shell {
+    min-height: calc(100svh - 110px);
+  }
+
+  .hero-copy {
+    padding-top: clamp(12px, 4vh, 34px);
+    text-shadow: 0 2px 18px rgba(8, 15, 40, 0.18);
+  }
+
+  .hero-character-gallery {
+    --hero-character-opacity: 0.74;
+    right: -26vw;
+    bottom: -14vh;
+    width: min(112vw, 560px);
+    height: min(64svh, 550px);
+    opacity: 0.72;
+  }
+
+  .hero-character-backdrop {
+    opacity: 0.2;
+    filter: blur(44px) saturate(0.68) contrast(0.82) brightness(1.1);
+  }
+
+  .hero-character-stage::before {
+    opacity: 0.12;
   }
 
   .site-header {
@@ -4179,8 +4749,31 @@ h1 {
   h1,
   .lead,
   .hero-actions,
-  .hero-magic {
+  .hero-character-gallery {
     opacity: 1;
     transform: none;
+  }
+
+  .hero-character-aura,
+  .hero-character-aura::before,
+  .hero-character-aura::after,
+  .hero-character-stage,
+  .hero-character-stage::before,
+  .hero-character-dissolve,
+  .hero-character-dissolve::before,
+  .hero-character-dissolve::after {
+    animation: none !important;
+  }
+
+  .hero-character-stage,
+  .hero-character-gallery:hover .hero-character-stage,
+  .hero-character-gallery:active .hero-character-stage {
+    translate: 0 0;
+    scale: 1;
+    transition: none;
+  }
+
+  .hero-character-layer:not(.is-active) {
+    display: none;
   }
 }
