@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=4" />
+    <title>qihai的世界 | 几何作图</title>
+    <meta name="description" content="支持网格吸附、几何图形、批注、测量和导出的浏览器作图工具。" />
+    <link rel="icon" type="image/jpeg" href="../../assets/SiteIcon.jpg" />
+    <link rel="apple-touch-icon" href="../../assets/SiteIcon.jpg" />
+    <link rel="stylesheet" href="../../src/styles/main.css" />
+    <link rel="stylesheet" href="../../src/styles/geometry.css?v=20260820" />
+  </head>
+  <body class="geometry-body">
+    <div id="app"></div>
+    <input id="geometry-image-input" type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden />
+    <input id="geometry-project-input" type="file" accept="application/json,.json,.qihai-geometry.json" hidden />
+    <script src="../../src/vendor/kld-intersections-0.7.0.umd.js"></script>
+    <script type="module" src="../../src/tools/geometry/main.js?v=20260820"></script>
+  </body>
+</html>

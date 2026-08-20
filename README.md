@@ -17,6 +17,30 @@
   - 本地 `IndexedDB` 草稿保存
   - 预留 GitHub 登录与仓库同步状态
   - 任务板数据文件为 `content/tasks/board.json`
+- 工具页（`tools.html`）
+  - 汇总站点内可独立使用的纯前端小工具
+  - 几何作图工作区位于 `tools/geometry/index.html`
+
+## 几何作图工具
+
+几何作图工具是无需构建步骤的静态前端应用，支持网格与坐标轴、几何吸附、常用图元、Bézier 曲线、自由笔迹、文字、测量、图片、节点编辑、逻辑组合、对象擦除，以及 PNG / SVG / 工程文件导出。
+
+- 工程文档使用带版本号的 `.qihai-geometry.json`，导入图片以内嵌 Data URL 保存
+- 文档修改自动保存到浏览器 `IndexedDB`，界面偏好使用 `localStorage`
+- Fabric.js 7.4.0 与 kld-intersections 0.7.0 固定保存在 `src/vendor/`
+- 第三方许可和来源记录在 `src/vendor/THIRD_PARTY_NOTICES.md`
+
+重新拉取并校验固定版本依赖：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\fetch-web-vendor.ps1
+```
+
+仅检查本地依赖文件是否齐全：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\fetch-web-vendor.ps1 -VerifyOnly
+```
 
 ## GitHub 数据与缓存
 
@@ -91,6 +115,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\self-check.ps1
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\self-check.ps1 -Preview -KeepServer
 ```
+
+上述命令默认打开工具入口。如需直接打开几何作图工作区：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\self-check.ps1 -Preview -PreviewPage geometry -KeepServer
+```
+
+如需预览首页，可使用 `-PreviewPage home`。
 
 ## 任务板同步配置
 

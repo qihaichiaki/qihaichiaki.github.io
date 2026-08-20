@@ -1,0 +1,416 @@
+:root {
+  --geometry-sitebar: 58px;
+  --geometry-commandbar: 50px;
+  --geometry-statusbar: 28px;
+  --geometry-toolbar: 70px;
+  --geometry-inspector: 288px;
+  --geometry-chrome: color-mix(in srgb, var(--surface-bg) 94%, transparent);
+  --geometry-canvas: #ffffff;
+  --geometry-grid-minor: rgba(57, 72, 112, 0.1);
+  --geometry-grid-major: rgba(57, 72, 112, 0.2);
+}
+
+.geometry-body {
+  min-width: 0;
+  height: 100vh;
+  min-height: 600px;
+  overflow: hidden;
+  background: var(--body-grad-mid);
+}
+
+.geometry-body .site-header-workspace {
+  min-height: var(--geometry-sitebar);
+  height: var(--geometry-sitebar);
+  padding: 6px 18px;
+  background: var(--geometry-chrome);
+  border-bottom-color: var(--line);
+}
+
+.geometry-body .site-header-workspace .brand { font-size: 0.92rem; }
+.geometry-body .site-header-workspace .site-nav { gap: 14px; }
+.geometry-body .site-header-workspace .site-nav a { padding-block: 7px; font-size: 0.82rem; }
+.geometry-body .site-header-workspace .site-user-trigger,
+.geometry-body .site-header-workspace .site-user-menu { width: 38px; min-width: 38px; height: 38px; }
+.geometry-body .site-header-workspace .site-user-area { min-width: 38px; min-height: 38px; }
+
+.geometry-app {
+  height: 100vh;
+  padding-top: var(--geometry-sitebar);
+  display: grid;
+  grid-template-rows: var(--geometry-commandbar) minmax(0, 1fr) var(--geometry-statusbar);
+  color: var(--ink);
+  font-family: Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+
+.geometry-commandbar,
+.geometry-statusbar,
+.geometry-toolbar,
+.geometry-inspector {
+  background: var(--geometry-chrome);
+  backdrop-filter: blur(18px) saturate(1.08);
+}
+
+.geometry-commandbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(180px, 360px) minmax(420px, 1fr);
+  align-items: center;
+  gap: 16px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+  z-index: 12;
+}
+
+.geometry-command-group { display: flex; align-items: center; gap: 5px; }
+.geometry-command-group-end { justify-content: flex-end; }
+
+.geometry-command,
+.inspector-action-grid button {
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 0 11px;
+  color: var(--ink);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.geometry-command:hover,
+.inspector-action-grid button:hover {
+  background: var(--control-hover);
+  border-color: var(--line);
+}
+
+.geometry-command:active,
+.inspector-action-grid button:active { transform: translateY(1px); }
+.geometry-command:disabled { opacity: 0.38; cursor: not-allowed; }
+.geometry-command-primary { background: var(--accent); color: #fff; }
+.geometry-command-primary:hover { background: color-mix(in srgb, var(--accent) 88%, #000); }
+
+.geometry-document-title {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.geometry-document-title input {
+  min-width: 0;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--ink);
+  background: transparent;
+  text-align: center;
+  font-weight: 650;
+}
+
+.geometry-document-title input:focus { border-color: var(--accent); outline: 0; background: var(--surface-soft); }
+.geometry-document-title span { color: var(--muted); font-size: 0.7rem; white-space: nowrap; }
+
+.geometry-workspace {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: var(--geometry-toolbar) minmax(0, 1fr) var(--geometry-inspector);
+}
+
+.geometry-toolbar {
+  position: relative;
+  z-index: 11;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow-y: auto;
+  overflow-x: visible;
+  border-right: 1px solid var(--line);
+  scrollbar-width: thin;
+}
+
+.geometry-tool-group { display: grid; border-bottom: 1px solid var(--line); padding: 5px 6px; gap: 2px; }
+
+.geometry-tool,
+.geometry-tool-family summary {
+  display: grid;
+  place-items: center;
+  gap: 1px;
+  min-height: 50px;
+  padding: 4px 2px;
+  border: 0;
+  border-radius: 10px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
+  transition: color 150ms ease, background-color 150ms ease, transform 150ms ease;
+}
+
+.geometry-tool > span,
+.geometry-tool-family summary > span { font-size: 1.25rem; line-height: 1; }
+.geometry-tool small,
+.geometry-tool-family summary small { font-size: 0.64rem; line-height: 1.1; }
+.geometry-tool:hover,
+.geometry-tool-family summary:hover { color: var(--ink); background: var(--control-hover); }
+.geometry-tool.is-active { color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.geometry-tool.is-active > span { transform: scale(1.08); }
+
+.geometry-tool-family { position: relative; border-bottom: 1px solid var(--line); padding: 5px 6px; }
+.geometry-tool-family summary { list-style: none; }
+.geometry-tool-family summary::-webkit-details-marker { display: none; }
+.geometry-tool-popover {
+  position: fixed;
+  left: calc(var(--geometry-toolbar) + 8px);
+  top: 214px;
+  width: 208px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-bg);
+  box-shadow: 0 18px 42px rgba(20, 34, 84, 0.2);
+  animation: geometry-pop 150ms ease both;
+}
+
+.geometry-stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  outline: 0;
+  background-color: var(--geometry-canvas);
+  touch-action: none;
+}
+
+.geometry-stage[data-background="dark"] { --geometry-canvas: #111a35; }
+.geometry-stage[data-background="transparent"] {
+  --geometry-canvas: #ffffff;
+  background-image:
+    linear-gradient(45deg, rgba(58, 67, 96, 0.08) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(58, 67, 96, 0.08) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(58, 67, 96, 0.08) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(58, 67, 96, 0.08) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+}
+
+.geometry-fatal-error {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  padding: 32px;
+  text-align: center;
+}
+
+.geometry-fatal-error h1,
+.geometry-fatal-error p { margin: 0; }
+.geometry-fatal-error a { color: var(--accent); }
+
+.geometry-stage .canvas-container { position: absolute !important; inset: 0; }
+.geometry-stage canvas { display: block; }
+
+.geometry-empty-guide {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  color: var(--muted);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.geometry-empty-guide strong { color: color-mix(in srgb, var(--ink) 70%, transparent); font-size: 0.94rem; }
+.geometry-empty-guide span { font-size: 0.76rem; }
+.geometry-empty-guide.is-hidden { opacity: 0; transform: translate(-50%, calc(-50% + 8px)); }
+
+.geometry-snap-hint {
+  position: absolute;
+  z-index: 7;
+  min-width: 8px;
+  min-height: 8px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 16%, transparent);
+  animation: geometry-snap 700ms ease infinite alternate;
+}
+
+.geometry-snap-hint::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 12px;
+  top: -10px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  color: #fff;
+  background: var(--accent);
+  font-size: 0.65rem;
+  white-space: nowrap;
+}
+
+.geometry-crop-box {
+  position: absolute;
+  z-index: 8;
+  border: 1px dashed var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  box-shadow: 0 0 0 9999px rgba(24, 31, 56, 0.16);
+  pointer-events: none;
+}
+
+.geometry-drop-hint {
+  position: absolute;
+  z-index: 20;
+  inset: 18px;
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--accent);
+  border-radius: 18px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--surface-bg) 90%, transparent);
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.geometry-toast {
+  position: absolute;
+  z-index: 22;
+  left: 50%;
+  bottom: 20px;
+  max-width: min(520px, calc(100% - 40px));
+  padding: 9px 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  background: var(--surface-bg);
+  box-shadow: 0 14px 34px rgba(20, 34, 84, 0.18);
+  font-size: 0.78rem;
+  transform: translateX(-50%);
+  animation: geometry-toast-in 180ms ease both;
+}
+
+.geometry-inspector {
+  min-height: 0;
+  z-index: 10;
+  border-left: 1px solid var(--line);
+  transition: transform 180ms ease, width 180ms ease;
+}
+
+.geometry-inspector-scroll { height: 100%; overflow-y: auto; scrollbar-width: thin; }
+.inspector-section { padding: 16px; border-bottom: 1px solid var(--line); }
+.inspector-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.inspector-heading-small { margin-bottom: 10px; }
+.inspector-heading h2 { margin: 3px 0 0; font-size: 1rem; line-height: 1.25; }
+.inspector-heading > span { min-width: 24px; padding: 3px 6px; border-radius: 999px; color: var(--muted); background: var(--control-hover); text-align: center; font-size: 0.7rem; }
+.inspector-kicker { color: var(--muted); font-family: "Orbitron", sans-serif; font-size: 0.58rem; letter-spacing: 0.15em; }
+.inspector-empty { padding: 12px 0 6px; color: var(--muted); font-size: 0.78rem; line-height: 1.7; }
+.inspector-controls { display: grid; gap: 11px; }
+.inspector-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.inspector-field { display: grid; gap: 5px; color: var(--muted); font-size: 0.7rem; }
+.inspector-field-wide { width: 100%; }
+.inspector-field > span { display: flex; justify-content: space-between; align-items: center; }
+
+.inspector-field input:not([type="range"]):not([type="color"]),
+.inspector-field select {
+  width: 100%;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--control-bg);
+}
+
+.inspector-field input[type="color"] { width: 100%; height: 34px; padding: 3px; border: 1px solid var(--control-border); border-radius: 8px; background: var(--control-bg); }
+.inspector-field input[type="range"] { width: 100%; accent-color: var(--accent); }
+.inspector-check-row { display: flex; gap: 14px; color: var(--muted); font-size: 0.74rem; }
+.inspector-check-column { display: grid; gap: 8px; margin: 10px 0; color: var(--muted); font-size: 0.74rem; }
+.inspector-check-row input,
+.inspector-check-column input { accent-color: var(--accent); }
+.inspector-text-controls { display: grid; gap: 10px; }
+.inspector-action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
+.inspector-action-grid-four { grid-template-columns: repeat(4, 1fr); }
+.inspector-action-grid button { min-width: 0; padding-inline: 4px; border-color: var(--line); font-size: 0.7rem; }
+.inspector-action-grid .inspector-danger { color: #c45564; }
+.inspector-document { display: grid; gap: 10px; }
+
+.geometry-statusbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 10px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.68rem;
+  z-index: 12;
+}
+
+.geometry-statusbar span:last-child { margin-left: auto; }
+
+.geometry-dialog {
+  width: min(520px, calc(100vw - 40px));
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  color: var(--ink);
+  background: var(--surface-bg);
+  box-shadow: 0 28px 70px rgba(14, 22, 58, 0.3);
+}
+
+.geometry-dialog::backdrop { background: rgba(10, 16, 38, 0.36); backdrop-filter: blur(5px); }
+.geometry-dialog-content { display: grid; gap: 14px; padding: 20px; }
+.geometry-dialog header { display: flex; justify-content: space-between; align-items: flex-start; }
+.geometry-dialog h2 { margin: 4px 0 0; font-size: 1.2rem; }
+.geometry-dialog header button { border: 0; color: var(--muted); background: transparent; font-size: 1.4rem; cursor: pointer; }
+.geometry-dialog-actions { display: flex; justify-content: flex-end; gap: 5px; margin-top: 4px; }
+.geometry-dialog-note { margin: 0; color: #b16a4f; font-size: 0.76rem; }
+.is-hidden { display: none !important; }
+
+@keyframes geometry-pop { from { opacity: 0; transform: translateX(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes geometry-snap { from { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 12%, transparent); } to { box-shadow: 0 0 0 7px color-mix(in srgb, var(--accent) 18%, transparent); } }
+@keyframes geometry-toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+@media (max-width: 1120px) {
+  .geometry-commandbar { grid-template-columns: auto minmax(160px, 1fr) auto; }
+  .geometry-command-group-end .geometry-command:not(.geometry-command-primary):not(.geometry-inspector-toggle) { display: none; }
+  .geometry-inspector { position: absolute; top: calc(var(--geometry-sitebar) + var(--geometry-commandbar)); right: 0; bottom: var(--geometry-statusbar); width: var(--geometry-inspector); box-shadow: -18px 0 42px rgba(20, 34, 84, 0.14); }
+  .geometry-workspace { grid-template-columns: var(--geometry-toolbar) minmax(0, 1fr); }
+  .geometry-body:not(.geometry-inspector-open) .geometry-inspector { transform: translateX(100%); }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --geometry-toolbar: 56px;
+    --geometry-inspector: min(288px, calc(100vw - var(--geometry-toolbar)));
+  }
+
+  .geometry-body .site-header-workspace { padding-inline: 12px; }
+  .geometry-body .site-header-workspace .site-nav { gap: 10px; }
+  .geometry-commandbar { grid-template-columns: minmax(0, 1fr) auto; gap: 6px; padding-inline: 6px; }
+  .geometry-document-title { display: none; }
+  .geometry-command { padding-inline: 8px; }
+  .geometry-command-group { gap: 2px; }
+  .geometry-tool-group { padding-inline: 3px; }
+  .geometry-tool,
+  .geometry-tool-family summary { min-height: 48px; }
+  .geometry-tool small,
+  .geometry-tool-family small { font-size: 0.58rem; }
+  .geometry-statusbar { gap: 12px; padding-inline: 7px; }
+  #status-snap { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .geometry-tool-popover,
+  .geometry-toast,
+  .geometry-snap-hint { animation: none; }
+  .geometry-tool,
+  .geometry-command,
+  .geometry-inspector { transition: none; }
+}

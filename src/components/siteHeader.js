@@ -1,19 +1,25 @@
 const NAV_ITEMS = [
-  { id: "tasks", label: "任务板", href: "./tasks.html" },
-  { id: "blog", label: "博客", href: "./blog.html" }
+  { id: "tools", label: "工具", path: "tools.html" },
+  { id: "tasks", label: "任务板", path: "tasks.html" },
+  { id: "blog", label: "博客", path: "blog.html" }
 ];
 
-export function siteHeader({ homeHref = "./index.html#top", currentPage = "home" } = {}) {
+const resolveRootHref = (basePath, path) => `${String(basePath || ".").replace(/\/$/, "")}/${path}`;
+
+export function siteHeader({ homeHref, basePath = ".", currentPage = "home", variant = "default" } = {}) {
   const navHtml = NAV_ITEMS.map((item) => {
     const isCurrent = item.id === currentPage;
-    const href = isCurrent ? "#top" : item.href;
+    const href = isCurrent ? "#top" : resolveRootHref(basePath, item.path);
 
     return `<a class="${isCurrent ? "is-current" : ""}" href="${href}">${item.label}</a>`;
   }).join("");
 
+  const finalHomeHref = homeHref || `${resolveRootHref(basePath, "index.html")}#top`;
+  const variantClass = variant === "workspace" ? " site-header-workspace" : "";
+
   return `
-    <header class="site-header">
-      <a class="brand" href="${homeHref}">qihai</a>
+    <header class="site-header${variantClass}">
+      <a class="brand" href="${finalHomeHref}">qihai</a>
       <div class="header-controls">
         <nav class="site-nav">
           ${navHtml}

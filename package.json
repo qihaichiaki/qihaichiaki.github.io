@@ -1,0 +1,9 @@
+{
+  "name": "qihai-github-io",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/geometry/*.test.js",
+    "check": "powershell -ExecutionPolicy Bypass -File ./scripts/self-check.ps1"
+  }
+}
