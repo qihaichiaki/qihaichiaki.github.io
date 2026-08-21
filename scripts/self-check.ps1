@@ -163,6 +163,8 @@ try {
   Assert-True ($galleryJsResp.Content -match "GALLERY_STATE_KEY") "首页角色轮播未保存当前图片"
   Assert-True ($galleryJsResp.Content -match 'addEventListener\("pointerenter"') "首页角色轮播未启用悬浮暂停"
   Assert-True ($cssResp.Content -match "characterDaydreamFloat") "首页角色图片未启用静态推镜效果"
+  Assert-True ($cssResp.Content -match '\.hero-character-layer \.hero-character-image\s*\{\s*animation:\s*characterDaydreamFloat') "首页角色前景动画未在轮播层间共享时间线"
+  Assert-True ($cssResp.Content -match '\.hero-character-layer \.hero-character-backdrop\s*\{\s*animation:\s*characterBackdropBreath') "首页角色背景动画未在轮播层间共享时间线"
   Assert-True ($cssResp.Content -match "characterLightLeak") "首页角色图片未启用光漏效果"
   Assert-True ($cssResp.Content -match "characterBokehDrift") "首页角色图片未启用漂浮光点效果"
   Assert-True ($galleryJsResp.Content -match "discoverRepositoryImages") "首页角色轮播未启用仓库图片自动发现"

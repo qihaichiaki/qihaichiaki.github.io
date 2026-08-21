@@ -1004,12 +1004,12 @@ h1 {
     cubic-bezier(0, 0, 0.3, 1) forwards;
 }
 
-.hero-character-layer.is-active .hero-character-image {
+.hero-character-layer .hero-character-image {
   animation: characterDaydreamFloat 14s ease-in-out infinite alternate;
   will-change: transform;
 }
 
-.hero-character-layer.is-active .hero-character-backdrop {
+.hero-character-layer .hero-character-backdrop {
   animation: characterBackdropBreath 16s ease-in-out infinite alternate;
   will-change: opacity, transform;
 }
@@ -1120,6 +1120,9 @@ h1 {
   .hero-character-gallery:not(.is-transitioning):hover .hero-character-layer.is-active .hero-character-image {
     filter: saturate(1.04) contrast(1.01) brightness(1.04);
     scale: var(--character-hover-scale);
+  }
+
+  .hero-character-gallery:not(.is-transitioning):hover .hero-character-layer .hero-character-image {
     animation-play-state: paused;
   }
 
