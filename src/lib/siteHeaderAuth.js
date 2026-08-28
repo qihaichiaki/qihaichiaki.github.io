@@ -33,6 +33,7 @@ const normalizeSession = (session, fallbackMode = "local") => {
     avatarUrl,
     authenticated,
     canEdit: authenticated && Boolean(source.canEdit),
+    verified: Boolean(source.verified),
     mode
   };
 };
@@ -49,7 +50,7 @@ const readCachedSession = (fallbackMode = "local") => {
       return createAnonymousSession(fallbackMode);
     }
 
-    return normalizeSession(parsed, fallbackMode);
+    return normalizeSession({ ...parsed, verified: false }, fallbackMode);
   } catch {
     return createAnonymousSession(fallbackMode);
   }
@@ -95,6 +96,7 @@ const syncHeaderAuthUi = (config, session) => {
   const userAvatar = document.querySelector("#site-user-avatar");
   const userName = document.querySelector("#site-user-name");
   const userHint = document.querySelector("#site-user-hint");
+  const adminLink = document.querySelector("#site-admin-link");
   const logoutButton = document.querySelector("#site-logout-button");
 
   const remoteEnabled = hasRemoteApi(config);
@@ -102,6 +104,12 @@ const syncHeaderAuthUi = (config, session) => {
   const avatarUrl = getSessionAvatarUrl(session, login);
   const authenticated = Boolean(session?.authenticated);
   const editable = authenticated && Boolean(session?.canEdit);
+  const ownerVerified =
+    remoteEnabled &&
+    Boolean(session?.verified) &&
+    editable &&
+    Boolean(login) &&
+    login === String(config?.allowedLogin || "").trim();
   const triggerLabel = authenticated
     ? editable
       ? "GitHub 已连接，打开站点菜单"
@@ -123,6 +131,10 @@ const syncHeaderAuthUi = (config, session) => {
 
   if (logoutButton) {
     logoutButton.classList.toggle("is-hidden", !authenticated);
+  }
+
+  if (adminLink) {
+    adminLink.classList.toggle("is-hidden", !ownerVerified);
   }
 
   if (trigger) {
@@ -163,7 +175,7 @@ const syncHeaderAuthUi = (config, session) => {
   if (userHint) {
     if (authenticated) {
       userHint.textContent = editable
-        ? "当前已连接 GitHub，可编辑任务与博客并同步到仓库。"
+        ? "当前已连接 GitHub，可编辑任务、博客与站点展示图片。"
         : "当前账号只有浏览权限；如需写入仓库，请切换到有权限的 GitHub 账号。";
     } else if (remoteEnabled) {
       userHint.textContent = "可连接 GitHub，也可仅浏览当前页面并切换主题。";
@@ -177,6 +189,7 @@ const bindHeaderInteractions = (getConfig, getSession, setSession, onSessionChan
   const connectButton = document.querySelector("#site-connect-button");
   const trigger = document.querySelector("#site-user-trigger");
   const dropdown = document.querySelector("#site-user-dropdown");
+  const adminLink = document.querySelector("#site-admin-link");
   const logoutButton = document.querySelector("#site-logout-button");
   const themeToggle = document.querySelector("#theme-toggle");
 
@@ -190,6 +203,13 @@ const bindHeaderInteractions = (getConfig, getSession, setSession, onSessionChan
   if (connectButton && connectButton.dataset.bound !== "true") {
     connectButton.dataset.bound = "true";
     connectButton.addEventListener("click", () => {
+      closeDropdown();
+    });
+  }
+
+  if (adminLink && adminLink.dataset.bound !== "true") {
+    adminLink.dataset.bound = "true";
+    adminLink.addEventListener("click", () => {
       closeDropdown();
     });
   }
@@ -278,12 +298,16 @@ export const initSiteHeaderAuth = async ({ onSessionChange } = {}) => {
 
   if (hasRemoteApi(config)) {
     try {
-      setSession(await fetchSession(config));
+      setSession({ ...(await fetchSession(config)), verified: true });
     } catch {
-      setSession(session.authenticated ? { ...session, mode: "remote" } : createAnonymousSession("remote"));
+      setSession(
+        session.authenticated
+          ? { ...session, verified: false, mode: "remote" }
+          : { ...createAnonymousSession("remote"), verified: false }
+      );
     }
   } else {
-    setSession(createAnonymousSession("local"));
+    setSession({ ...createAnonymousSession("local"), verified: true });
   }
 
   return {

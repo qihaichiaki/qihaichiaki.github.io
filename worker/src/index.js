@@ -14,6 +14,13 @@ const MAX_POST_CONTENT_LENGTH = 500_000;
 const MAX_POST_IMAGE_COUNT = 12;
 const MAX_POST_IMAGE_SIZE = 6 * 1024 * 1024;
 const MAX_POST_IMAGE_TOTAL_SIZE = 20 * 1024 * 1024;
+const SITE_IMAGE_MIME_EXTENSIONS = {
+  "image/avif": ["avif"],
+  "image/gif": ["gif"],
+  "image/jpeg": ["jpg", "jpeg"],
+  "image/png": ["png"],
+  "image/webp": ["webp"]
+};
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -385,6 +392,8 @@ const getPostsDirectory = (env) => {
 
 const isValidPostFile = (value) => /^[a-z0-9][a-z0-9._-]*\.md$/i.test(String(value || ""));
 const isValidPostImagePath = (value) => /^assets\/[a-z0-9][a-z0-9._-]{0,119}\.(?:png|jpe?g|gif|webp)$/i.test(String(value || ""));
+const isValidSiteImageName = (value) =>
+  /^[a-z0-9][a-z0-9._-]{0,179}\.(?:avif|gif|jpe?g|png|webp)$/i.test(String(value || ""));
 
 const isPostImageReferenced = (content, path) => {
   const source = String(content || "");
@@ -406,6 +415,15 @@ const hasValidPostImageSignature = (bytes, mimeType) => {
     return bytes.length >= 12 && decoder.decode(bytes.slice(0, 4)) === "RIFF" && decoder.decode(bytes.slice(8, 12)) === "WEBP";
   }
   return false;
+};
+
+const hasValidSiteImageSignature = (bytes, mimeType) => {
+  if (mimeType === "image/avif") {
+    if (bytes.length < 16 || decoder.decode(bytes.slice(4, 8)) !== "ftyp") return false;
+    const brands = decoder.decode(bytes.slice(8, Math.min(bytes.length, 48)));
+    return brands.includes("avif") || brands.includes("avis");
+  }
+  return hasValidPostImageSignature(bytes, mimeType);
 };
 
 const normalizePostAssets = (input, postContent) => {
@@ -646,6 +664,64 @@ const createGitBlob = async (env, installationToken, content, encoding = "utf-8"
   return String(data.sha || "");
 };
 
+const commitTreeToRepo = async (env, installationToken, head, tree, message) => {
+  const treeResponse = await githubRequest(
+    `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/trees`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `token ${installationToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ base_tree: head.treeSha, tree })
+    }
+  );
+  const nextTree = await treeResponse.json();
+  const identity = {
+    name: env.GITHUB_COMMITTER_NAME || env.GITHUB_ALLOWED_LOGIN || env.GITHUB_OWNER,
+    email: env.GITHUB_COMMITTER_EMAIL || "yushenqihai@gmail.com"
+  };
+  const commitResponse = await githubRequest(
+    `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/commits`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `token ${installationToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message,
+        tree: nextTree.sha,
+        parents: [head.commitSha],
+        author: identity,
+        committer: identity
+      })
+    }
+  );
+  const commit = await commitResponse.json();
+
+  try {
+    await githubRequest(
+      `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/refs/heads/${encodeURIComponent(head.branch)}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `token ${installationToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ sha: commit.sha, force: false })
+      }
+    );
+  } catch (error) {
+    if (error?.status === 409 || error?.status === 422) {
+      throw Object.assign(new Error("远端分支刚刚发生变化，请重新读取后再保存。"), { status: 409 });
+    }
+    throw error;
+  }
+
+  return commit;
+};
+
 const commitPostToRepo = async (env, input, originalFile, base = {}, assetInput = {}) => {
   const postInput = validatePost(input);
   const assets = normalizePostAssets(assetInput, postInput.content);
@@ -734,62 +810,8 @@ const commitPostToRepo = async (env, input, originalFile, base = {}, assetInput 
       .map((path) => ({ path: `${postsDirectory}/${path}`, mode: "100644", type: "blob", sha: null }))
   ];
 
-  const treeResponse = await githubRequest(
-    `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/trees`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `token ${installationToken}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ base_tree: head.treeSha, tree })
-    }
-  );
-  const nextTree = await treeResponse.json();
   const action = previousFile ? "更新" : "发布";
-  const commitResponse = await githubRequest(
-    `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/commits`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `token ${installationToken}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: `博客：${action}${post.title}`,
-        tree: nextTree.sha,
-        parents: [head.commitSha],
-        author: {
-          name: env.GITHUB_COMMITTER_NAME || env.GITHUB_ALLOWED_LOGIN || env.GITHUB_OWNER,
-          email: env.GITHUB_COMMITTER_EMAIL || "yushenqihai@gmail.com"
-        },
-        committer: {
-          name: env.GITHUB_COMMITTER_NAME || env.GITHUB_ALLOWED_LOGIN || env.GITHUB_OWNER,
-          email: env.GITHUB_COMMITTER_EMAIL || "yushenqihai@gmail.com"
-        }
-      })
-    }
-  );
-  const commit = await commitResponse.json();
-
-  try {
-    await githubRequest(
-      `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/refs/heads/${encodeURIComponent(head.branch)}`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `token ${installationToken}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ sha: commit.sha, force: false })
-      }
-    );
-  } catch (error) {
-    if (error?.status === 409 || error?.status === 422) {
-      throw Object.assign(new Error("远端分支刚刚发生变化，请重新读取后再保存。"), { status: 409 });
-    }
-    throw error;
-  }
+  const commit = await commitTreeToRepo(env, installationToken, head, tree, `博客：${action}${post.title}`);
 
   return {
     posts: normalizedPosts,
@@ -803,6 +825,184 @@ const commitPostToRepo = async (env, input, originalFile, base = {}, assetInput 
     commitSha: String(commit.sha || ""),
     commitUrl: String(commit.html_url || ""),
     updatedAt
+  };
+};
+
+const getSiteImagesDirectory = (env) => {
+  const value = String(env.GITHUB_SITE_IMAGES_PATH || "assets/img")
+    .trim()
+    .replace(/^\/+|\/+$/g, "");
+  if (!value || value.split("/").some((segment) => !segment || segment === "." || segment === "..")) {
+    return "assets/img";
+  }
+  return value;
+};
+
+const buildRawRepoUrl = (env, ref, path) =>
+  `https://raw.githubusercontent.com/${encodeURIComponent(env.GITHUB_OWNER)}/${encodeURIComponent(env.GITHUB_REPO)}/${encodeURIComponent(ref)}/${toGitHubPath(path)}`;
+
+const listRepoSiteImages = async (env, installationToken, ref) => {
+  const directory = getSiteImagesDirectory(env);
+  const url = new URL(
+    `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${toGitHubPath(directory)}`
+  );
+  if (ref) url.searchParams.set("ref", ref);
+
+  let contents;
+  try {
+    const response = await githubRequest(url.toString(), {
+      headers: { Authorization: `token ${installationToken}` }
+    });
+    contents = await response.json();
+  } catch (error) {
+    if (error?.status === 404) return [];
+    throw error;
+  }
+
+  if (!Array.isArray(contents)) {
+    throw Object.assign(new Error("展示图片目录不是有效的 GitHub 目录。"), { status: 500 });
+  }
+
+  return contents
+    .filter((item) => item?.type === "file" && isValidSiteImageName(item.name))
+    .map((item) => {
+      const path = String(item.path || `${directory}/${item.name}`);
+      return {
+        name: String(item.name || ""),
+        path,
+        sha: String(item.sha || ""),
+        size: Number(item.size || 0),
+        url: String(item.download_url || buildRawRepoUrl(env, ref, path))
+      };
+    })
+    .sort((left, right) => left.name.localeCompare(right.name, "zh-CN", { numeric: true, sensitivity: "base" }));
+};
+
+const normalizeSiteImageChanges = (input) => {
+  const source = input && typeof input === "object" ? input : {};
+  const rawUpserts = Array.isArray(source.upserts) ? source.upserts : [];
+  const rawDeletes = Array.isArray(source.deletes) ? source.deletes : [];
+  const names = new Set();
+
+  const upserts = rawUpserts.map((item) => {
+    const name = String(item?.name || "").trim();
+    const normalizedName = name.toLowerCase();
+    const mimeType = String(item?.mimeType || "").trim().toLowerCase();
+    const content = String(item?.content || "").replace(/\s+/g, "");
+    const extension = name.split(".").pop()?.toLowerCase() || "";
+    const validExtensions = SITE_IMAGE_MIME_EXTENSIONS[mimeType];
+
+    if (!isValidSiteImageName(name) || !validExtensions?.includes(extension) || names.has(normalizedName)) {
+      throw Object.assign(new Error("展示图片名称或类型不合法。"), { status: 400 });
+    }
+
+    let bytes;
+    try {
+      bytes = base64Decode(content);
+    } catch {
+      throw Object.assign(new Error("展示图片内容不是有效的 Base64。"), { status: 400 });
+    }
+    if (!bytes.length || !hasValidSiteImageSignature(bytes, mimeType)) {
+      throw Object.assign(new Error("展示图片内容或格式不合法。"), { status: 400 });
+    }
+
+    names.add(normalizedName);
+    return { name, mimeType, content, size: bytes.length };
+  });
+
+  const deletes = [];
+  const deleteNames = new Set();
+  rawDeletes.forEach((item) => {
+    const name = String(item || "").trim();
+    const normalizedName = name.toLowerCase();
+    if (!isValidSiteImageName(name) || names.has(normalizedName)) {
+      throw Object.assign(new Error("待移除的展示图片名称不合法。"), { status: 400 });
+    }
+    if (!deleteNames.has(normalizedName)) {
+      deletes.push(name);
+      deleteNames.add(normalizedName);
+    }
+  });
+
+  if (!upserts.length && !deletes.length) {
+    throw Object.assign(new Error("没有需要同步的展示图片变更。"), { status: 400 });
+  }
+
+  return { upserts, deletes };
+};
+
+const fetchSiteImagesFromRepo = async (env) => {
+  const installationToken = await getInstallationToken(env);
+  const head = await getRepoHead(env, installationToken);
+  return {
+    images: await listRepoSiteImages(env, installationToken, head.commitSha),
+    headSha: head.commitSha
+  };
+};
+
+const commitSiteImagesToRepo = async (env, input, baseHeadSha) => {
+  const changes = normalizeSiteImageChanges(input);
+  const installationToken = await getInstallationToken(env);
+  const head = await getRepoHead(env, installationToken);
+  if (!baseHeadSha || String(baseHeadSha) !== head.commitSha) {
+    throw Object.assign(new Error("远端仓库已变化，请刷新图片列表后重试。"), { status: 409 });
+  }
+
+  const directory = getSiteImagesDirectory(env);
+  const currentImages = await listRepoSiteImages(env, installationToken, head.commitSha);
+  const currentByName = new Map(currentImages.map((image) => [image.name.toLowerCase(), image]));
+  const deleteNames = new Set(changes.deletes.map((name) => name.toLowerCase()));
+
+  if (changes.upserts.some((image) => currentByName.has(image.name.toLowerCase()))) {
+    throw Object.assign(new Error("仓库中已存在同名展示图片。"), { status: 409 });
+  }
+  if (changes.deletes.some((name) => !currentByName.has(name.toLowerCase()))) {
+    throw Object.assign(new Error("待移除的展示图片已不存在，请刷新后重试。"), { status: 409 });
+  }
+
+  const remainingCount = currentImages.length - deleteNames.size + changes.upserts.length;
+  if (remainingCount < 1) {
+    throw Object.assign(new Error("首页至少需要保留一张展示图片。"), { status: 400 });
+  }
+
+  const blobShas = await Promise.all(
+    changes.upserts.map((image) => createGitBlob(env, installationToken, image.content, "base64"))
+  );
+  const tree = [
+    ...changes.upserts.map((image, index) => ({
+      path: `${directory}/${image.name}`,
+      mode: "100644",
+      type: "blob",
+      sha: blobShas[index]
+    })),
+    ...changes.deletes.map((name) => ({
+      path: currentByName.get(name.toLowerCase()).path,
+      mode: "100644",
+      type: "blob",
+      sha: null
+    }))
+  ];
+  const message = `站点：更新首页展示图片（新增 ${changes.upserts.length}，移除 ${changes.deletes.length}）`;
+  const commit = await commitTreeToRepo(env, installationToken, head, tree, message);
+  const nextRef = String(commit.sha || "");
+  const nextImages = [
+    ...currentImages.filter((image) => !deleteNames.has(image.name.toLowerCase())),
+    ...changes.upserts.map((image, index) => ({
+      name: image.name,
+      path: `${directory}/${image.name}`,
+      sha: blobShas[index],
+      size: image.size,
+      url: buildRawRepoUrl(env, nextRef, `${directory}/${image.name}`)
+    }))
+  ]
+    .map((image) => ({ ...image, url: buildRawRepoUrl(env, nextRef, image.path) }))
+    .sort((left, right) => left.name.localeCompare(right.name, "zh-CN", { numeric: true, sensitivity: "base" }));
+
+  return {
+    images: nextImages,
+    headSha: nextRef,
+    commitSha: nextRef,
+    commitUrl: String(commit.html_url || "")
   };
 };
 
@@ -1122,6 +1322,36 @@ const handlePutPost = async (request, env) => {
   return withCors(json(result), request, env);
 };
 
+const handleGetSiteImages = async (request, env) => {
+  await requireOwnerSession(request, env);
+  return withCors(json(await fetchSiteImagesFromRepo(env)), request, env);
+};
+
+const handlePutSiteImages = async (request, env) => {
+  await requireOwnerSession(request, env);
+
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return withCors(json({ message: "请求体不是有效的 JSON。" }, 400), request, env);
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return withCors(json({ message: "缺少展示图片变更内容。" }, 400), request, env);
+  }
+
+  const result = await commitSiteImagesToRepo(
+    env,
+    {
+      upserts: Array.isArray(payload.upserts) ? payload.upserts : [],
+      deletes: Array.isArray(payload.deletes) ? payload.deletes : []
+    },
+    String(payload.baseHeadSha || "")
+  );
+  return withCors(json(result), request, env);
+};
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -1132,35 +1362,43 @@ export default {
 
     try {
       if (url.pathname === "/api/auth/start" && request.method === "GET") {
-        return handleAuthStart(request, env);
+        return await handleAuthStart(request, env);
       }
 
       if (url.pathname === "/api/auth/callback" && request.method === "GET") {
-        return handleAuthCallback(request, env);
+        return await handleAuthCallback(request, env);
       }
 
       if (url.pathname === "/api/session" && request.method === "GET") {
-        return handleSession(request, env);
+        return await handleSession(request, env);
       }
 
       if (url.pathname === "/api/logout" && request.method === "POST") {
-        return handleLogout(request, env);
+        return await handleLogout(request, env);
       }
 
       if (url.pathname === "/api/tasks" && request.method === "GET") {
-        return handleGetTasks(request, env);
+        return await handleGetTasks(request, env);
       }
 
       if (url.pathname === "/api/tasks" && request.method === "PUT") {
-        return handlePutTasks(request, env);
+        return await handlePutTasks(request, env);
       }
 
       if (url.pathname === "/api/posts" && request.method === "GET") {
-        return handleGetPosts(request, env);
+        return await handleGetPosts(request, env);
       }
 
       if (url.pathname === "/api/posts" && request.method === "PUT") {
-        return handlePutPost(request, env);
+        return await handlePutPost(request, env);
+      }
+
+      if (url.pathname === "/api/site-images" && request.method === "GET") {
+        return await handleGetSiteImages(request, env);
+      }
+
+      if (url.pathname === "/api/site-images" && request.method === "PUT") {
+        return await handlePutSiteImages(request, env);
       }
 
       return withCors(
@@ -1174,7 +1412,9 @@ export default {
             "GET /api/tasks",
             "PUT /api/tasks",
             "GET /api/posts?file=example.md",
-            "PUT /api/posts"
+            "PUT /api/posts",
+            "GET /api/site-images",
+            "PUT /api/site-images"
           ]
         }),
         request,

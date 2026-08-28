@@ -8,6 +8,7 @@
     "GITHUB_REPO": "qihaichiaki.github.io",
     "GITHUB_TASKS_PATH": "content/tasks/board.json",
     "GITHUB_POSTS_INDEX_PATH": "content/posts/index.json",
+    "GITHUB_SITE_IMAGES_PATH": "assets/img",
     "GITHUB_BRANCH": "main",
     "GITHUB_ALLOWED_LOGIN": "qihaichiaki",
     "GITHUB_COMMITTER_NAME": "qihaichiaki",

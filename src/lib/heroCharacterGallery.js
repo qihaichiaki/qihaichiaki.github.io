@@ -222,8 +222,8 @@ const discoverLocalDirectoryImages = async (signal) => {
     })
     .filter(Boolean);
 
-  if (images.length < 2) {
-    throw new Error("LOCAL_HERO_IMAGE_DISCOVERY_FAILED: NOT_ENOUGH_IMAGES");
+  if (images.length < 1) {
+    throw new Error("LOCAL_HERO_IMAGE_DISCOVERY_FAILED: NO_IMAGES");
   }
 
   return sortImages(images);
@@ -253,7 +253,7 @@ const discoverRepositoryImages = async (signal) => {
     .filter((item) => item?.type === "file" && IMAGE_EXTENSION_PATTERN.test(String(item.name || "")))
     .map((item) => createAsset(`./${String(item.path).replace(/^\/+/, "")}`, String(item.name || "")));
 
-  return images.length >= 2 ? sortImages(images) : FALLBACK_IMAGES;
+  return images.length ? sortImages(images) : FALLBACK_IMAGES;
 };
 
 const discoverCharacterImages = async (signal) => {
@@ -449,7 +449,18 @@ export const initHeroCharacterGallery = (selector = "[data-character-gallery]") 
       currentIndex = characterImages.findIndex(
         (asset) => asset.name === activeName || asset.src === activeSource
       );
-      if (currentIndex < 0) currentIndex = 0;
+      if (currentIndex < 0) {
+        currentIndex = 0;
+        const activeAsset = characterImages[currentIndex];
+        const metadata = await preloadImage(activeAsset.src);
+        if (destroyed) return;
+        const foreground = applyAsset(layers[activeLayerIndex], activeAsset, metadata);
+        try {
+          await foreground?.decode();
+        } catch {
+          // 已加载的替代图片即使 decode 不可用也可以继续显示。
+        }
+      }
       updateAccessibleLabel();
       preloadFollowingImage();
       scheduleRotation();

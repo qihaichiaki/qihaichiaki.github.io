@@ -44,6 +44,9 @@ export function siteHeader({ homeHref = "./index.html#top", currentPage = "home"
                 连接 GitHub
               </a>
               <p id="site-connect-note" class="site-menu-note is-hidden">当前页面未配置 GitHub 同步。</p>
+              <a id="site-admin-link" class="site-menu-item site-menu-link is-hidden" href="./admin.html" role="menuitem">
+                后台管理
+              </a>
               <button id="site-logout-button" class="site-menu-item site-menu-item-danger is-hidden" type="button" role="menuitem">
                 退出登录
               </button>

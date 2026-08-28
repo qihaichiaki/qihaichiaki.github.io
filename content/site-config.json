@@ -3,5 +3,6 @@
   "owner": "qihaichiaki",
   "repo": "qihaichiaki.github.io",
   "tasksPath": "content/tasks/board.json",
+  "siteImagesPath": "assets/img",
   "allowedLogin": "qihaichiaki"
 }

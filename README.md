@@ -17,6 +17,10 @@
   - 本地 `IndexedDB` 草稿保存
   - 预留 GitHub 登录与仓库同步状态
   - 任务板数据文件为 `content/tasks/board.json`
+- 后台管理页（`admin.html`）
+  - 入口仅在允许的 GitHub 账号在线校验通过后显示于头像菜单
+  - 查看、批量上传和移除 `assets/img/` 中的首页展示图片
+  - 每次变更由 Worker 创建 GitHub commit，并进行远端版本冲突检查
 
 ## GitHub 数据与缓存
 
@@ -92,10 +96,19 @@ powershell -ExecutionPolicy Bypass -File .\scripts\self-check.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\self-check.ps1 -Preview -KeepServer
 ```
 
+## 后台展示图片管理
+
+后台入口位于右上角 GitHub 头像的下拉菜单中。未登录、登录账号不匹配，或 Worker 无法在线确认登录态时，入口不会显示；直接访问 `admin.html` 也不会开放管理区。
+
+当前支持 AVIF、GIF、JPEG、PNG 与 WebP，可一次选择多张图片，暂不设置图片大小和数量上限。上传会保留原文件名；为避免误覆盖，仓库中已有同名文件时会要求重新选择文件名。首页至少保留一张展示图片。
+
+展示图片接口为 `GET /api/site-images` 与 `PUT /api/site-images`，两者都会在 Worker 端校验 `GITHUB_ALLOWED_LOGIN` 对应的签名 session。
+
 ## 任务板同步配置
 
 - 站点侧配置文件：`content/site-config.json`
 - 任务板数据文件：`content/tasks/board.json`
+- 首页展示图片目录：`assets/img/`
 - Worker 项目目录：`worker/`
 
 首版默认是“本地模式”：

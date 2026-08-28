@@ -3,6 +3,7 @@ const DEFAULT_SITE_CONFIG = {
   owner: "qihaichiaki",
   repo: "qihaichiaki.github.io",
   tasksPath: "content/tasks/board.json",
+  siteImagesPath: "assets/img",
   allowedLogin: "qihaichiaki"
 };
 
@@ -31,6 +32,7 @@ export const normalizeSiteConfig = (value) => {
   next.owner = String(next.owner || DEFAULT_SITE_CONFIG.owner).trim();
   next.repo = String(next.repo || DEFAULT_SITE_CONFIG.repo).trim();
   next.tasksPath = String(next.tasksPath || DEFAULT_SITE_CONFIG.tasksPath).trim();
+  next.siteImagesPath = String(next.siteImagesPath || DEFAULT_SITE_CONFIG.siteImagesPath).trim();
   next.allowedLogin = String(next.allowedLogin || DEFAULT_SITE_CONFIG.allowedLogin).trim();
 
   return next;
