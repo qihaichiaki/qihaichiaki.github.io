@@ -1,20 +1,21 @@
 {
   "version": 1,
   "title": "qihai task board",
-  "updatedAt": "2026-08-18T02:02:53.672Z",
+  "updatedAt": "2026-10-10T02:12:03.415Z",
   "updatedBy": "qihaichiaki",
   "columns": [
     {
       "id": "backlog",
       "title": "待整理",
-      "taskIds": []
+      "taskIds": [
+        "task-mwv7h5i3"
+      ]
     },
     {
       "id": "active",
       "title": "进行中",
       "taskIds": [
-        "task-4zmrx0ql",
-        "task-mwv7h5i3"
+        "task-4zmrx0ql"
       ]
     },
     {
@@ -104,9 +105,9 @@
       "tags": [
         "Namica"
       ],
-      "columnId": "active",
+      "columnId": "backlog",
       "createdAt": "2026-07-30T10:16:14.891Z",
-      "updatedAt": "2026-07-30T10:16:55.196Z"
+      "updatedAt": "2026-10-10T02:11:47.413Z"
     },
     {
       "id": "task-4zmrx0ql",
