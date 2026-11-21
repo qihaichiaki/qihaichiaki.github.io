@@ -1,21 +1,19 @@
 {
   "version": 1,
   "title": "qihai task board",
-  "updatedAt": "2026-10-10T02:12:03.415Z",
+  "updatedAt": "2026-11-21T15:03:27.224Z",
   "updatedBy": "qihaichiaki",
   "columns": [
     {
       "id": "backlog",
       "title": "待整理",
-      "taskIds": [
-        "task-mwv7h5i3"
-      ]
+      "taskIds": []
     },
     {
       "id": "active",
       "title": "进行中",
       "taskIds": [
-        "task-4zmrx0ql"
+        "task-mwv7h5i3"
       ]
     },
     {
@@ -25,6 +23,7 @@
         "task-abbhk9nk",
         "task-sx0m71gt",
         "task-khei7hh0",
+        "task-4zmrx0ql",
         "task-92yam3c6",
         "task-ayn0zv0c",
         "task-rfuih7ji"
@@ -100,14 +99,14 @@
     },
     {
       "id": "task-mwv7h5i3",
-      "title": "namica测试功能",
+      "title": "namica-dev开发",
       "description": "* window\n* render",
       "tags": [
         "Namica"
       ],
-      "columnId": "backlog",
+      "columnId": "active",
       "createdAt": "2026-07-30T10:16:14.891Z",
-      "updatedAt": "2026-10-10T02:11:47.413Z"
+      "updatedAt": "2026-11-21T15:03:13.008Z"
     },
     {
       "id": "task-4zmrx0ql",
@@ -116,9 +115,9 @@
       "tags": [
         "WORK"
       ],
-      "columnId": "active",
+      "columnId": "done",
       "createdAt": "2026-08-18T02:01:38.174Z",
-      "updatedAt": "2026-08-18T02:02:48.151Z"
+      "updatedAt": "2026-11-21T15:03:16.691Z"
     }
   ]
 }
